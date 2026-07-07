@@ -1,16 +1,5 @@
 /**
- * src/init-db.js — Tiện ích khởi tạo cơ sở dữ liệu tự động.
- *
- *   node src/init-db.js
- *
- * Việc nó làm:
- *   1) Kết nối MySQL (KHÔNG chọn sẵn database) bằng cấu hình .env.
- *   2) Chạy db/schema.sql  (tạo database website_vnpt + toàn bộ bảng).
- *   3) Chạy db/seed.sql     (danh mục, sản phẩm, phương thức thanh toán, vai trò...).
- *   4) Tạo/ghi đè tài khoản admin demo với mật khẩu băm bcrypt sinh tại chỗ
- *      (an toàn hơn hash hardcode) — email admin@vnvd.vn / mật khẩu admin123.
- *
- * Lưu ý: cần MySQL đang chạy và .env đã cấu hình DB_USER/DB_PASSWORD.
+ * src/init-db.js — Tiện ích khởi tạo cơ sở dữ liệu tự động cho Hosting
  */
 require('dotenv').config();
 const fs = require('fs');
@@ -18,21 +7,26 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 
-const DB_NAME = process.env.DB_NAME || 'website_vnpt';
+// Cập nhật DB_NAME mặc định thành tên DB trên InfinityFree
+const DB_NAME = process.env.DB_NAME || 'if0_42294950_e_commerce'; 
 const ADMIN_EMAIL = 'admin@vnvd.vn';
 const ADMIN_PASSWORD = 'admin123';
 
 async function run() {
+  // Bổ sung thuộc tính 'database' để kết nối thẳng vào DB của shared hosting
   const conn = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST || 'sql203.infinityfree.com',
     port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER || 'root',
+    user: process.env.DB_USER || 'if0_42294950',
     password: process.env.DB_PASSWORD || '',
+    database: DB_NAME, 
     multipleStatements: true,
     charset: 'utf8mb4',
   });
 
   try {
+    console.log(`→ Đã kết nối thành công tới database: ${DB_NAME}`);
+    
     console.log('→ Đang import db/schema.sql ...');
     const schema = fs.readFileSync(path.join(__dirname, '..', 'db', 'schema.sql'), 'utf8');
     await conn.query(schema);
@@ -43,7 +37,8 @@ async function run() {
 
     console.log('→ Đang tạo tài khoản admin demo (băm mật khẩu tại chỗ) ...');
     const hash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-    await conn.query(`USE \`${DB_NAME}\`;`);
+    
+    // Đã bỏ dòng lệnh USE `DB_NAME` vì đã kết nối trực tiếp ở trên
     await conn.query(
       `INSERT INTO nhan_vien (ho_ten, email, mat_khau_hash, vai_tro_id, trang_thai)
        VALUES ('Quản trị viên', ?, ?, 1, 'hoat_dong')

@@ -4,9 +4,7 @@
 -- Engine: MySQL 8.0+ (InnoDB, utf8mb4)
 -- =========================================================
 
-CREATE DATABASE IF NOT EXISTS website_vnpt
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE website_vnpt;
+
 
 -- =========================================================
 -- 1. NGƯỜI DÙNG & PHÂN QUYỀN
