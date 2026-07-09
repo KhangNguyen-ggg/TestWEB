@@ -7,7 +7,7 @@
 --  Mật khẩu admin demo: admin123
 --  (hash bcrypt bên dưới tương ứng chuỗi "admin123")
 -- =========================================================
-USE defaultdb;
+USE website_vnpt;
 
 -- ---------- 1. Vai trò & nhân viên (admin) ----------
 INSERT INTO vai_tro (id, ten_vai_tro) VALUES
