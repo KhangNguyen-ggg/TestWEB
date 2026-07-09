@@ -20,7 +20,7 @@ SET time_zone = "+00:00";
 --
 -- Cơ sở dữ liệu: `website_vnpt`
 --
-CREATE DATABASE IF NOT EXISTS `website_vnpt` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+--CREATE DATABASE IF NOT EXISTS `website_vnpt` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `website_vnpt`;
 
 -- --------------------------------------------------------
