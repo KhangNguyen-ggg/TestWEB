@@ -5,9 +5,12 @@
  *
  * Việc nó làm:
  *   1) Kết nối MySQL (KHÔNG chọn sẵn database) bằng cấu hình .env.
- *   2) Chạy db/init_all.sql (Chứa toàn bộ cấu trúc bảng và dữ liệu mẫu).
- *   3) Tạo/ghi đè tài khoản admin demo với mật khẩu băm bcrypt sinh tại chỗ
+ *   2) Chạy db/schema.sql  (tạo database website_vnpt + toàn bộ bảng).
+ *   3) Chạy db/seed.sql     (danh mục, sản phẩm, phương thức thanh toán, vai trò...).
+ *   4) Tạo/ghi đè tài khoản admin demo với mật khẩu băm bcrypt sinh tại chỗ
  *      (an toàn hơn hash hardcode) — email admin@vnvd.vn / mật khẩu admin123.
+ *
+ * Lưu ý: cần MySQL đang chạy và .env đã cấu hình DB_USER/DB_PASSWORD.
  */
 require('dotenv').config();
 const fs = require('fs');
@@ -30,12 +33,14 @@ async function run() {
   });
 
   try {
-    // 1. Đọc và thực thi file SQL hợp nhất mới
-    console.log('→ Đang thực thi file cấu trúc và dữ liệu db/init_all.sql ...');
-    const initSql = fs.readFileSync(path.join(__dirname, '..', 'db', 'init_all.sql'), 'utf8');
-    await conn.query(initSql);
+    console.log('→ Đang import db/schema.sql ...');
+    const schema = fs.readFileSync(path.join(__dirname, '..', 'db', 'schema.sql'), 'utf8');
+    await conn.query(schema);
 
-    // 2. Tạo/Cập nhật tài khoản admin demo bảo mật
+    console.log('→ Đang import db/seed.sql ...');
+    const seed = fs.readFileSync(path.join(__dirname, '..', 'db', 'seed.sql'), 'utf8');
+    await conn.query(seed);
+
     console.log('→ Đang tạo tài khoản admin demo (băm mật khẩu tại chỗ) ...');
     const hash = await bcrypt.hash(ADMIN_PASSWORD, 10);
     await conn.query(`USE \`${DB_NAME}\`;`);
