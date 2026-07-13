@@ -137,14 +137,15 @@ app.post('/api/chat', async (req, res) => {
 });
 
 /* ============ Static + SPA fallback ============ */
-app.use(express.static(path.join(__dirname, '../frontend')));
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api/')) return next();
-  res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
-});
-
 app.listen(PORT, async () => {
-  console.log(`✅ VNVD server đang chạy tại http://localhost:${PORT}`);
+  // Tự động nhận diện URL public khi chạy trên Render, nếu không có sẽ dùng localhost làm mặc định
+  const serverUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+
+  console.log(`\n===========================================================`);
+  console.log(`✅ VNVD server đang chạy thành công tại:`);
+  console.log(`   👉 ${serverUrl}`);
+  console.log(`===========================================================\n`);
+
   await checkConnection();
   if (!GEMINI_API_KEY) {
     console.warn('⚠️  Chưa có GEMINI_API_KEY trong .env — chatbot sẽ báo lỗi cho tới khi bạn cấu hình (các API khác vẫn chạy).');
