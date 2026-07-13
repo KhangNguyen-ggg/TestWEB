@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VNVD – Dịch Vụ Số Toàn Diện</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+<div id="particles-bg"></div>
+
+<header class="site-header" id="navbar">
+  <div class="top-bar">
+    <div class="top-bar-container">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="16" fill="url(#logoGrad)"/>
+            <path d="M8 16 L16 8 L24 16 L16 24 Z" fill="white" opacity="0.9"/>
+            <circle cx="16" cy="16" r="4" fill="white"/>
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                <stop offset="0%" stop-color="#0066CC"/>
+                <stop offset="100%" stop-color="#00AAFF"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="logo-text">VNVD</span>
+      </a>
+
+      <span class="top-bar-slogan">Chuyển đổi số – Vươn tầm thế giới</span>
+
+      <div class="top-bar-actions">
+        <button class="tb-btn btn-search" aria-label="Tìm kiếm">
+          <i data-lucide="search"></i>
+          <span class="tb-btn-label">Tìm kiếm</span>
+        </button>
+
+        <a href="#" class="tb-btn btn-lang">
+          <i data-lucide="globe" class="icon-sm"></i>
+          <span class="tb-btn-label">VI</span>
+        </a>
+
+        <button class="tb-btn btn-cart" id="cartToggle" aria-label="Giỏ hàng">
+          <i data-lucide="shopping-cart"></i>
+          <span class="tb-btn-label">Giỏ hàng</span>
+          <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+        </button>
+
+        <div class="tb-divider"></div>
+
+        <div class="auth-btns" id="authBtns">
+          <button class="btn-login" id="openLogin">Đăng nhập</button>
+          <button class="btn-register" id="openRegister">Đăng ký</button>
+        </div>
+
+        <div class="user-menu" id="userMenu" style="display:none">
+          <button class="user-avatar-btn" id="userAvatarBtn">
+            <span class="user-avatar-circle" id="userAvatarCircle">U</span>
+            <span class="user-display-name" id="userDisplayName">Người dùng</span>
+            <i data-lucide="chevron-down" class="icon-sm"></i>
+          </button>
+          <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown-header">
+              <span id="userDropdownName">Người dùng</span>
+              <span id="userDropdownEmail" class="user-dropdown-email"></span>
+            </div>
+            <a href="#" class="user-dropdown-item"><i data-lucide="user"></i> Hồ sơ cá nhân</a>
+            <a href="#" class="user-dropdown-item"><i data-lucide="package"></i> Đơn hàng của tôi</a>
+            <a href="#" class="user-dropdown-item"><i data-lucide="settings"></i> Cài đặt</a>
+            <button class="user-dropdown-item admin-only admin-entry" id="openAdminBtn"><i data-lucide="layout-dashboard"></i> Quản trị hệ thống</button>
+            <div class="user-dropdown-divider"></div>
+            <button class="user-dropdown-item logout-btn" id="logoutBtn"><i data-lucide="log-out"></i> Đăng xuất</button>
+          </div>
+        </div>
+
+        <div class="tb-divider"></div>
+
+        <a href="#contact" class="btn-cta">
+          <i data-lucide="phone" style="width:15px;height:15px;"></i>
+          Liên hệ ngay
+        </a>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <div class="nav-bar-container">
+      <nav class="nav-links" id="navLinks">
+        <a href="#home" class="nav-link">Trang chủ</a>
+        <div class="nav-item dropdown">
+          <a href="#services" class="nav-link">Dịch vụ số <i data-lucide="chevron-down" class="icon-sm"></i></a>
+          <div class="dropdown-menu">
+            <a href="#">Cloud Computing</a>
+            <a href="#">Bảo mật số</a>
+            <a href="#">AI & Automation</a>
+          </div>
+        </div>
+        <a href="#pricing" class="nav-link">Bảng giá</a>
+        <a href="#contact" class="nav-link">Liên hệ</a>
+      </nav>
+
+      <div class="nav-bar-right">
+        <i data-lucide="phone-call" style="width:15px;height:15px;color:#fff;"></i>
+        <span>Hotline: <strong>1800 1260</strong></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="home">
+    <div class="hero-bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <br>
+    <div class="floating-elements">
+        <div class="float-card float-card-1">
+            <i data-lucide="shield-check"></i>
+            <span>Bảo mật 99.9%</span>
+        </div>
+        <div class="float-card float-card-2">
+            <i data-lucide="zap"></i>
+            <span>Tốc độ 5G</span>
+        </div>
+        <div class="float-card float-card-3">
+            <i data-lucide="cloud"></i>
+            <span>Cloud Ready</span>
+        </div>
+        <div class="float-badge float-badge-1">
+            <span class="badge-num">500K+</span>
+            <span class="badge-label">Khách hàng</span>
+        </div>
+        <div class="float-badge float-badge-2">
+            <span class="badge-num">99.9%</span>
+            <span class="badge-label">Uptime SLA</span>
+        </div>
+    </div>
+
+    <div class="hero-content">
+        <div class="hero-tag">
+            <span class="tag-dot"></span>
+            Nền tảng dịch vụ số hàng đầu Việt Nam
+        </div>
+        <h1 class="hero-title">
+            Chuyển đổi số<br />
+            <span class="gradient-text">Toàn diện &amp; Bền vững</span>
+        </h1>
+        <p class="hero-desc">
+            Hệ sinh thái dịch vụ số tích hợp — từ hạ tầng đến ứng dụng — AI thông minh —
+            giúp doanh nghiệp bứt phá trong kỷ nguyên số.
+        </p>
+        <div class="hero-actions">
+            <a href="#services" class="btn-primary">
+                Khám phá dịch vụ
+                <i data-lucide="arrow-right"></i>
+            </a>
+            <a href="#demo" class="btn-outline">
+                <i data-lucide="play-circle"></i>
+                Xem demo
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="hstat">
+                <span class="hstat-num" data-target="500">0</span><span>K+</span>
+                <span class="hstat-label">Khách hàng</span>
+            </div>
+            <div class="hstat-divider"></div>
+            <div class="hstat">
+                <span class="hstat-num" data-target="30">0</span><span>+</span>
+                <span class="hstat-label">Năm kinh nghiệm</span>
+            </div>
+            <div class="hstat-divider"></div>
+            <div class="hstat">
+                <span class="hstat-num" data-target="99">0</span><span>.9%</span>
+                <span class="hstat-label">Uptime SLA</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-visual">
+        <div class="ring ring-outer">
+            <div class="ring-dot ring-dot-1"><i data-lucide="wifi"></i></div>
+            <div class="ring-dot ring-dot-2"><i data-lucide="database"></i></div>
+            <div class="ring-dot ring-dot-3"><i data-lucide="cpu"></i></div>
+            <div class="ring-dot ring-dot-4"><i data-lucide="globe"></i></div>
+        </div>
+        <div class="ring ring-mid">
+            <div class="ring-dot ring-dot-5"><i data-lucide="lock"></i></div>
+            <div class="ring-dot ring-dot-6"><i data-lucide="bar-chart-2"></i></div>
+        </div>
+        <div class="hero-center-icon">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <circle cx="40" cy="40" r="40" fill="url(#heroGrad)" />
+                <path d="M20 40 L40 20 L60 40 L40 60 Z" fill="white" opacity="0.85" />
+                <circle cx="40" cy="40" r="10" fill="white" />
+                <defs>
+                    <linearGradient id="heroGrad" x1="0" y1="0" x2="80" y2="80">
+                        <stop offset="0%" stop-color="#0055BB" />
+                        <stop offset="100%" stop-color="#00CCFF" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <div class="scroll-hint">
+        <span>Cuộn xuống</span>
+        <i data-lucide="chevrons-down" class="scroll-arrow"></i>
+    </div>
+</section>
+
+<section class="hero-carousel" id="vnvd-promo" aria-label="Banner quảng cáo VNVD / Vinaphone 5G">
+    <div class="vnvd-carousel" id="vnvdBanner" aria-roledescription="carousel" aria-label="Banner quảng cáo VNVD">
+        <div class="vc-viewport">
+            <ul class="vc-track" id="vcTrack">
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="1 / 10">
+                    <img src="assets/images/img09.jpg" alt="Data roaming Vinaphone không giới hạn" loading="eager" fetchpriority="high">
+                </li>
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="2 / 10">
+                    <img src="assets/images/img10.jpg" alt="Mạng 5G Vinaphone dẫn đầu khu vực" loading="lazy">
+                </li>
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="3 / 10">
+                    <img src="assets/images/img05.png" alt="eSIM 100% Online - Mua và kích hoạt trong 5 phút" loading="lazy">
+                </li>
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="4 / 10">
+                    <img src="assets/images/img02.jpg" alt="Đường tới World Cup - MyTV cùng VNPT" loading="lazy">
+                </li>
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="5 / 10">
+                    <img src="assets/images/img01.jpg" alt="Xác thực thông tin thuê bao qua VNeID/CCCD" loading="lazy">
+                </li>
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="6 / 10">
+                    <img src="assets/images/img03.jpg" alt="30 năm VinaPhone - Triệu quà tri ân" loading="lazy">
+                </li>
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="7 / 10">
+                    <img src="assets/images/img04.jpg" alt="VNPT XGSPON 10Gbps siêu tốc độ" loading="lazy">
+                </li>
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="8 / 10">
+                    <img src="assets/images/img06.jpg" alt="Các đầu số gọi ra VNPT" loading="lazy">
+                </li>
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="9 / 10">
+                    <img src="assets/images/img07.jpg" alt="Combo Wifi Mesh 6 và Camera AI" loading="lazy">
+                </li>
+                <li class="vc-slide" role="group" aria-roledescription="slide" aria-label="10 / 10">
+                    <img src="assets/images/img08.jpg" alt="Tổng đài tin cậy VNPT" loading="lazy">
+                </li>
+            </ul>
+        </div>
+
+        <button class="vc-nav vc-prev" id="vcPrev" aria-label="Slide trước" type="button">
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+                <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </button>
+        <button class="vc-nav vc-next" id="vcNext" aria-label="Slide kế tiếp" type="button">
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+                <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </button>
+
+        <div class="vc-dots" id="vcDots" role="tablist" aria-label="Chọn slide"></div>
+        <div class="vc-progress" id="vcProgress"><span></span></div>
+    </div>
+</section>
+
+<div class="marquee-strip">
+    <div class="marquee-track">
+        <span>Cloud Computing</span><span class="sep">✦</span>
+        <span>5G Network</span><span class="sep">✦</span>
+        <span>AI & Machine Learning</span><span class="sep">✦</span>
+        <span>Cybersecurity</span><span class="sep">✦</span>
+        <span>IoT Platform</span><span class="sep">✦</span>
+        <span>Big Data Analytics</span><span class="sep">✦</span>
+        <span>Digital Transformation</span><span class="sep">✦</span>
+        <span>Smart City</span><span class="sep">✦</span>
+        <span>eGovernment</span><span class="sep">✦</span>
+        <span>Cloud Computing</span><span class="sep">✦</span>
+        <span>5G Network</span><span class="sep">✦</span>
+        <span>AI & Machine Learning</span><span class="sep">✦</span>
+        <span>Cybersecurity</span><span class="sep">✦</span>
+        <span>IoT Platform</span><span class="sep">✦</span>
+        <span>Big Data Analytics</span><span class="sep">✦</span>
+        <span>Digital Transformation</span><span class="sep">✦</span>
+        <span>Smart City</span><span class="sep">✦</span>
+        <span>eGovernment</span><span class="sep">✦</span>
+    </div>
+</div>
+
+<!-- SECTION 1: Dịch vụ Nổi bật nhất -->
+<section class="premium-featured-section" id="featured-services">
+    <div class="container">
+        <div class="section-header" style="margin-bottom: 30px;">
+            <div class="section-tag" style="background: rgba(255, 107, 0, 0.15); color: #FF6B00; border: 1px solid rgba(255, 107, 0, 0.3); font-weight: 600;">
+                <i data-lucide="award" style="width: 16px; height: 16px; margin-right: 5px; display: inline-block; vertical-align: middle;"></i> 
+                Lựa chọn hàng đầu
+            </div>
+            <h2 class="section-title" style="color: #ffffff; font-weight: 800;">Dịch vụ <span class="gradient-text">Nổi bật nhất</span></h2>
+            <p class="section-desc" style="color: rgba(255,255,255,0.9); font-size: 17px;">Top 3 giải pháp được các doanh nghiệp và tập đoàn tin dùng nhất hiện nay</p>
+        </div>
+
+        <div class="premium-grid">
+            <!-- Dịch vụ 1 -->
+            <div class="premium-card rank-1 order-1" style="--card-color: #3399FF;">
+                <div class="premium-badge"><i data-lucide="flame" style="width: 16px; height: 16px; margin-bottom: -2px;"></i> Bán chạy nhất</div>
+                <div class="card-icon-wrap" style="--card-color: #3399FF; margin-bottom: 25px; box-shadow: 0 0 15px #3399FF;">
+                    <i data-lucide="cloud" class="card-icon" style="color: #ffffff;"></i>
+                </div>
+                <h3>VNPT Cloud</h3>
+                <p>Hạ tầng điện toán đám mây tiên tiến, an toàn và tối ưu tài nguyên doanh nghiệp.</p>
+                <ul class="card-features" style="margin: 25px 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.15);">
+                    <li><i data-lucide="check" style="color: #3399FF; stroke-width: 3px;"></i> Tối ưu chi phí doanh nghiệp</li>
+                    <li><i data-lucide="check" style="color: #3399FF; stroke-width: 3px;"></i> Cam kết SLA đạt 99.9%</li>
+                    <li><i data-lucide="check" style="color: #3399FF; stroke-width: 3px;"></i> Hỗ trợ kỹ thuật ưu tiên 24/7</li>
+                </ul>
+                <div class="card-price" style="font-size: 16px; color: rgba(255,255,255,0.9);">
+                    Từ <strong style="font-size: 28px; color: #ffffff; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">1.500.000 ₫</strong>/Tháng
+                </div>
+                <div class="card-actions" style="margin-top: 30px; flex-direction: column; gap: 15px;">
+                    <button class="btn-add-cart" style="width: 100%; justify-content: center; font-size: 16px; font-weight: 600; padding: 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s; background: #3399FF; color: #ffffff; box-shadow: 0 4px 15px #3399FF80;" data-id="svc-001" data-name="VNPT Cloud" data-price="1500000" data-icon="cloud" data-color="#3399FF">
+                        <i data-lucide="shopping-cart"></i> Đăng ký ngay
+                    </button>
+                    <a href="#" class="card-link" style="text-align: center; width: 100%; color: #3399FF; font-weight: 600;">Xem chi tiết <i data-lucide="arrow-right"></i></a>
+                </div>
+            </div>
+
+            <!-- Dịch vụ 2 -->
+            <div class="premium-card order-2" style="--card-color: #FF8C33;">
+                <div class="premium-badge" style="background: linear-gradient(90deg, #0066CC, #00AAFF); box-shadow: 0 5px 15px rgba(0, 170, 255, 0.5);">Được quan tâm nhiều</div>
+                <div class="card-icon-wrap" style="--card-color: #FF8C33; margin-bottom: 25px; box-shadow: 0 0 15px #FF8C33;">
+                    <i data-lucide="shield-check" class="card-icon" style="color: #ffffff;"></i>
+                </div>
+                <h3>Giải pháp Bảo mật Chữ ký số</h3>
+                <p>Ký số bảo mật an toàn cao, xác thực giao điện tử nhanh chóng, hợp pháp pháp lý.</p>
+                <ul class="card-features" style="margin: 25px 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.15);">
+                    <li><i data-lucide="check" style="color: #FF8C33; stroke-width: 3px;"></i> Tối ưu chi phí doanh nghiệp</li>
+                    <li><i data-lucide="check" style="color: #FF8C33; stroke-width: 3px;"></i> Cam kết SLA đạt 99.9%</li>
+                    <li><i data-lucide="check" style="color: #FF8C33; stroke-width: 3px;"></i> Hỗ trợ kỹ thuật ưu tiên 24/7</li>
+                </ul>
+                <div class="card-price" style="font-size: 16px; color: rgba(255,255,255,0.9);">
+                    Từ <strong style="font-size: 28px; color: #ffffff; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">450.000 ₫</strong>/Năm
+                </div>
+                <div class="card-actions" style="margin-top: 30px; flex-direction: column; gap: 15px;">
+                    <button class="btn-add-cart" style="width: 100%; justify-content: center; font-size: 16px; font-weight: 600; padding: 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid #FF8C33;" data-id="svc-002" data-name="Chữ ký số" data-price="450000" data-icon="shield-check" data-color="#FF8C33">
+                        <i data-lucide="shopping-cart"></i> Đăng ký ngay
+                    </button>
+                    <a href="#" class="card-link" style="text-align: center; width: 100%; color: #FF8C33; font-weight: 600;">Xem chi tiết <i data-lucide="arrow-right"></i></a>
+                </div>
+            </div>
+
+            <!-- Dịch vụ 3 -->
+            <div class="premium-card order-3" style="--card-color: #33CC77;">
+                <div class="premium-badge" style="background: linear-gradient(90deg, #00AA55, #00FF88); box-shadow: 0 5px 15px rgba(0, 170, 85, 0.4); color: #003311;">Đánh giá cao</div>
+                <div class="card-icon-wrap" style="--card-color: #33CC77; margin-bottom: 25px; box-shadow: 0 0 15px #33CC77;">
+                    <i data-lucide="cpu" class="card-icon" style="color: #ffffff;"></i>
+                </div>
+                <h3>Trí tuệ nhân tạo VNPT AI</h3>
+                <p>Hệ thống AI nhận diện khuôn mặt, định danh eKYC thông minh tối ưu hóa vận hành.</p>
+                <ul class="card-features" style="margin: 25px 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.15);">
+                    <li><i data-lucide="check" style="color: #33CC77; stroke-width: 3px;"></i> Tối ưu chi phí doanh nghiệp</li>
+                    <li><i data-lucide="check" style="color: #33CC77; stroke-width: 3px;"></i> Cam kết SLA đạt 99.9%</li>
+                    <li><i data-lucide="check" style="color: #33CC77; stroke-width: 3px;"></i> Hỗ trợ kỹ thuật ưu tiên 24/7</li>
+                </ul>
+                <div class="card-price" style="font-size: 16px; color: rgba(255,255,255,0.9);">
+                    Từ <strong style="font-size: 28px; color: #ffffff; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">2.000.000 ₫</strong>/Tháng
+                </div>
+                <div class="card-actions" style="margin-top: 30px; flex-direction: column; gap: 15px;">
+                    <button class="btn-add-cart" style="width: 100%; justify-content: center; font-size: 16px; font-weight: 600; padding: 12px; border-radius: 8px; border: none; cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid #33CC77;" data-id="svc-003" data-name="VNPT AI" data-price="2000000" data-icon="cpu" data-color="#33CC77">
+                        <i data-lucide="shopping-cart"></i> Đăng ký ngay
+                    </button>
+                    <a href="#" class="card-link" style="text-align: center; width: 100%; color: #33CC77; font-weight: 600;">Xem chi tiết <i data-lucide="arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 2: Hệ sinh thái dịch vụ số toàn diện -->
+<section class="services" id="services">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Dịch vụ của chúng tôi</div>
+            <h2 class="section-title">Hệ sinh thái dịch vụ số <span class="gradient-text">toàn diện</span></h2>
+            <p class="section-desc">Từ hạ tầng đến ứng dụng — mọi giải pháp số bạn cần đều có tại đây</p>
+        </div>
+
+        <div class="services-grid">
+            <!-- Item 1 -->
+            <div class="service-card" data-delay="0">
+                <div class="card-icon-wrap" style="--card-color:#0066CC">
+                    <i data-lucide="cloud" class="card-icon"></i>
+                </div>
+                <h3>VNPT Cloud</h3>
+                <p>Hạ tầng điện toán đám mây tiên tiến, an toàn và tối ưu tài nguyên.</p>
+                <ul class="card-features">
+                    <li><i data-lucide='check'></i> IaaS / PaaS / SaaS</li>
+                    <li><i data-lucide='check'></i> Backup & DR</li>
+                    <li><i data-lucide='check'></i> Hybrid Cloud</li>
+                </ul>
+                <div class="card-price">Từ <strong>1.500.000 ₫</strong>/Tháng</div>
+                <div class="card-actions">
+                    <a href="#" class="card-link">Tìm hiểu thêm <i data-lucide="arrow-right"></i></a>
+                    <button class="btn-add-cart" data-id="svc-001" data-name="VNPT Cloud" data-price="1500000" data-icon="cloud" data-color="#0066CC">
+                        <i data-lucide="shopping-cart"></i> Thêm vào giỏ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="service-card featured" data-delay="100">
+                <div class="featured-badge">Phổ biến nhất</div>
+                <div class="card-icon-wrap" style="--card-color:#FF6B00">
+                    <i data-lucide="shield-check" class="card-icon"></i>
+                </div>
+                <h3>Bảo mật số VNPT</h3>
+                <p>Chứng chỉ bảo mật số toàn diện cho giao dịch doanh nghiệp.</p>
+                <ul class="card-features">
+                    <li><i data-lucide='check'></i> CA / SSL</li>
+                    <li><i data-lucide='check'></i> WAF & DDoS</li>
+                    <li><i data-lucide='check'></i> eKYC & SmartCA</li>
+                </ul>
+                <div class="card-price">Từ <strong>450.000 ₫</strong>/Năm</div>
+                <div class="card-actions">
+                    <a href="#" class="card-link">Tìm hiểu thêm <i data-lucide="arrow-right"></i></a>
+                    <button class="btn-add-cart" data-id="svc-002" data-name="Bảo mật số VNPT" data-price="450000" data-icon="shield-check" data-color="#FF6B00">
+                        <i data-lucide="shopping-cart"></i> Thêm vào giỏ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="service-card" data-delay="200">
+                <div class="card-icon-wrap" style="--card-color:#00AA55">
+                    <i data-lucide="cpu" class="card-icon"></i>
+                </div>
+                <h3>Trí tuệ nhân tạo (AI)</h3>
+                <p>Giải pháp AI thông minh giúp tự động hóa hoạt động kinh doanh.</p>
+                <ul class="card-features">
+                    <li><i data-lucide='check'></i> Smart Voice</li>
+                    <li><i data-lucide='check'></i> AI Camera</li>
+                    <li><i data-lucide='check'></i> Data Analytics</li>
+                </ul>
+                <div class="card-price">Từ <strong>2.000.000 ₫</strong>/Tháng</div>
+                <div class="card-actions">
+                    <a href="#" class="card-link">Tìm hiểu thêm <i data-lucide="arrow-right"></i></a>
+                    <button class="btn-add-cart" data-id="svc-003" data-name="Trí tuệ nhân tạo (AI)" data-price="2000000" data-icon="cpu" data-color="#00AA55">
+                        <i data-lucide="shopping-cart"></i> Thêm vào giỏ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 3: Bảng giá dịch vụ -->
+<section class="pricing-section" id="pricing">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Bảng giá dịch vụ</div>
+            <h2 class="section-title">Chọn gói phù hợp với <span class="gradient-text">doanh nghiệp của bạn</span></h2>
+            <p class="section-desc">Các gói dịch vụ linh hoạt, minh bạch — nâng cấp bất cứ lúc nào khi doanh nghiệp phát triển</p>
+        </div>
+
+        <div class="pricing-grid">
+            <!-- Gói Cơ bản -->
+            <div class="price-card" data-delay="0">
+                <h3 class="price-plan-name">Gói Cơ Bản (Basic)</h3>
+                <p class="price-plan-desc">Giải pháp số tối ưu cho cá nhân và hộ kinh doanh nhỏ bắt đầu số hoá.</p>
+                <div class="price-amount">
+                    <span class="price-num">490.000 ₫</span>
+                    <span class="price-unit">/Tháng</span>
+                </div>
+                <ul class="price-features">
+                    <li><i data-lucide='check'></i> 2 vCPU · 4GB RAM · 50GB SSD</li>
+                    <li><i data-lucide='check'></i> Hóa đơn điện tử (500 hóa đơn/tháng)</li>
+                    <li><i data-lucide='check'></i> Email doanh nghiệp (5 tài khoản)</li>
+                    <li><i data-lucide='check'></i> SSL cơ bản & sao lưu hàng tuần</li>
+                    <li><i data-lucide='check'></i> Hỗ trợ qua email (giờ hành chính)</li>
+                </ul>
+                <button class="btn-price btn-add-cart" data-id="pkg-basic" data-name="Gói Cơ Bản (Basic)" data-price="490000" data-icon="package" data-color="#0099AA">
+                    <i data-lucide="shopping-cart"></i> Chọn gói này
+                </button>
+            </div>
+
+            <!-- Gói Doanh nghiệp -->
+            <div class="price-card popular" data-delay="100">
+                <div class="price-popular-badge">Phổ biến nhất</div>
+                <h3 class="price-plan-name">Gói Doanh Nghiệp (Business)</h3>
+                <p class="price-plan-desc">Hệ sinh thái đầy đủ cho các công ty vừa và nhỏ tăng tốc bứt phá vận hành.</p>
+                <div class="price-amount">
+                    <span class="price-num">1.890.000 ₫</span>
+                    <span class="price-unit">/Tháng</span>
+                </div>
+                <ul class="price-features">
+                    <li><i data-lucide='check'></i> 8 vCPU · 16GB RAM · 200GB SSD</li>
+                    <li><i data-lucide='check'></i> Hóa đơn điện tử không giới hạn</li>
+                    <li><i data-lucide='check'></i> Email doanh nghiệp (50 tài khoản)</li>
+                    <li><i data-lucide='check'></i> Chứng thư số CA & WAF chống DDoS</li>
+                    <li><i data-lucide='check'></i> Chatbot AI & sao lưu hàng ngày</li>
+                    <li><i data-lucide='check'></i> Hỗ trợ ưu tiên 24/7</li>
+                </ul>
+                <button class="btn-price btn-add-cart" data-id="pkg-business" data-name="Gói Doanh Nghiệp (Business)" data-price="1890000" data-icon="briefcase" data-color="#0066CC">
+                    <i data-lucide="shopping-cart"></i> Chọn gói này
+                </button>
+            </div>
+
+            <!-- Gói Cao cấp -->
+            <div class="price-card" data-delay="200">
+                <h3 class="price-plan-name">Gói Cao Cấp (Premium)</h3>
+                <p class="price-plan-desc">Hạ tầng đám mây chuyên biệt và công nghệ quản trị an ninh tối cao cho tập đoàn.</p>
+                <div class="price-amount">
+                    <span class="price-num">5.500.000 ₫</span>
+                    <span class="price-unit">/Tháng</span>
+                </div>
+                <ul class="price-features">
+                    <li><i data-lucide='check'></i> Tài nguyên tùy chỉnh · Private Cloud</li>
+                    <li><i data-lucide='check'></i> Toàn bộ tính năng gói Doanh nghiệp</li>
+                    <li><i data-lucide='check'></i> SOC giám sát an ninh 24/7</li>
+                    <li><i data-lucide='check'></i> AI Analytics & Big Data</li>
+                    <li><i data-lucide='check'></i> SLA cam kết 99.99% · Kỹ sư riêng</li>
+                </ul>
+                <button class="btn-price btn-add-cart" data-id="pkg-premium" data-name="Gói Cao Cấp (Premium)" data-price="5500000" data-icon="crown" data-color="#FF6B00">
+                    <i data-lucide="shopping-cart"></i> Chọn gói này
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="stats-section" id="stats">
+    <div class="stats-bg-shape"></div>
+    <div class="container">
+        <div class="stats-inner">
+            <div class="stats-text">
+                <div class="section-tag light">Tại sao chọn chúng tôi</div>
+                <h2 class="section-title light">Tin tưởng bởi hàng trăm nghìn <span class="gold-text">doanh nghiệp</span></h2>
+                <p class="section-desc light">Với hơn 30 năm kinh nghiệm, chúng tôi đã đồng hành cùng sự phát triển của hàng trăm nghìn doanh nghiệp Việt Nam trên hành trình chuyển đổi số.</p>
+                <a href="#contact" class="btn-primary">Bắt đầu ngay <i data-lucide="arrow-right"></i></a>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-icon"><i data-lucide="users"></i></div>
+                    <div class="stat-num counter" data-target="500000">0</div>
+                    <div class="stat-label">Khách hàng tin dùng</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon"><i data-lucide="server"></i></div>
+                    <div class="stat-num counter" data-target="10000">0</div>
+                    <div class="stat-label">Server đang hoạt động</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon"><i data-lucide="globe"></i></div>
+                    <div class="stat-num counter" data-target="63">0</div>
+                    <div class="stat-label">Tỉnh thành phủ sóng</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon"><i data-lucide="award"></i></div>
+                    <div class="stat-num counter" data-target="150">0</div>
+                    <div class="stat-label">Giải thưởng công nghệ</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features" id="demo">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Quy trình triển khai</div>
+            <h2 class="section-title">Bắt đầu chỉ trong <span class="gradient-text">3 bước đơn giản</span></h2>
+        </div>
+        <div class="steps-wrap">
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-num">01</div>
+                <div class="step-icon"><i data-lucide="clipboard-list"></i></div>
+                <h3>Tư vấn & Phân tích</h3>
+                <p>Chuyên gia của chúng tôi sẽ phân tích nhu cầu và đề xuất giải pháp phù hợp nhất cho doanh nghiệp bạn.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">02</div>
+                <div class="step-icon"><i data-lucide="settings"></i></div>
+                <h3>Triển khai & Tích hợp</h3>
+                <p>Đội ngũ kỹ thuật triển khai nhanh chóng, tích hợp liền mạch với hệ thống hiện có của doanh nghiệp.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">03</div>
+                <div class="step-icon"><i data-lucide="trending-up"></i></div>
+                <h3>Vận hành & Tối ưu</h3>
+                <p>Hỗ trợ 24/7, giám sát liên tục và tối ưu hóa hiệu suất để đảm bảo hoạt động ổn định nhất.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="testimonials">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Khách hàng nói gì</div>
+            <h2 class="section-title">Phản hồi từ <span class="gradient-text">đối tác</span></h2>
+        </div>
+        <div class="testi-grid">
+            <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p>"Giải pháp Cloud của VNVD giúp chúng tôi giảm 40% chi phí hạ tầng IT và tăng tốc độ triển khai sản phẩm lên 3 lần."</p>
+                <div class="testi-author">
+                    <div class="testi-avatar" style="background:linear-gradient(135deg,#0066CC,#00AAFF)">NT</div>
+                    <div>
+                        <strong>Nguyễn Thanh Tùng</strong>
+                        <span>CTO – Công ty CP Thương mại ABC</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testi-card featured-testi">
+                <div class="testi-stars">★★★★★</div>
+                <p>"Hệ thống bảo mật và chứng thư số CA giúp chúng tôi tuân thủ đầy đủ quy định pháp luật, đồng thời tăng niềm tin của khách hàng."</p>
+                <div class="testi-author">
+                    <div class="testi-avatar" style="background:linear-gradient(135deg,#FF6B00,#FFB347)">LH</div>
+                    <div>
+                        <strong>Lê Hoàng Minh</strong>
+                        <span>Giám đốc IT – Ngân hàng XYZ</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testi-card">
+                <div class="testi-stars">★★★★★</div>
+                <p>"Chatbot AI và hệ thống IoT đã tự động hóa 70% quy trình vận hành nhà máy, tiết kiệm hàng tỷ đồng mỗi năm."</p>
+                <div class="testi-author">
+                    <div class="testi-avatar" style="background:linear-gradient(135deg,#00AA55,#00FF88)">PV</div>
+                    <div>
+                        <strong>Phạm Văn Đức</strong>
+                        <span>CEO – Tập đoàn Sản xuất DEF</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="contact-cta" id="contact">
+    <div class="cta-orb cta-orb-1"></div>
+    <div class="cta-orb cta-orb-2"></div>
+    <div class="container">
+        <div class="cta-inner">
+            <div class="cta-text">
+                <h2>Sẵn sàng chuyển đổi số<br /><span class="gold-text">doanh nghiệp của bạn?</span></h2>
+                <p>Liên hệ ngay để được tư vấn miễn phí và nhận ưu đãi đặc biệt dành riêng cho doanh nghiệp.</p>
+                <div class="cta-contacts">
+                    <div class="cta-contact-item">
+                        <i data-lucide="phone"></i>
+                        <span>1800 1260 (Miễn phí)</span>
+                    </div>
+                    <div class="cta-contact-item">
+                        <i data-lucide="mail"></i>
+                        <span>contact@vnvd.vn</span>
+                    </div>
+                    <div class="cta-contact-item">
+                        <i data-lucide="map-pin"></i>
+                        <span>57 Huỳnh Thúc Kháng, Hà Nội</span>
+                    </div>
+                </div>
+            </div>
+            <form class="contact-form" id="contactForm">
+                <h3>Đăng ký tư vấn miễn phí</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Họ và tên</label>
+                        <input type="text" placeholder="Nguyễn Văn A" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <input type="tel" placeholder="0901 234 567" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email doanh nghiệp</label>
+                    <input type="email" placeholder="contact@company.vn" required />
+                </div>
+                <div class="form-group">
+                    <label>Dịch vụ quan tâm</label>
+                    <select>
+                        <option>Cloud Computing</option>
+                        <option>Bảo mật & An toàn số</option>
+                        <option>AI & Tự động hóa</option>
+                        <option>Hạ tầng mạng 5G</option>
+                        <option>Quản trị doanh nghiệp số</option>
+                        <option>Giao tiếp & Cộng tác</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nội dung cần tư vấn</label>
+                    <textarea rows="3" placeholder="Mô tả nhu cầu của doanh nghiệp bạn..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary full-width">
+                    Gửi yêu cầu tư vấn <i data-lucide="send"></i>
+                </button>
+                <div class="form-success" id="formSuccess">
+                    <i data-lucide="check-circle"></i> Cảm ơn! Chúng tôi sẽ liên hệ trong 24 giờ.
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="nav-logo" style="margin-bottom:1rem">
+                    <div class="logo-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <circle cx="16" cy="16" r="16" fill="url(#footerLogoGrad)" />
+                            <path d="M8 16 L16 8 L24 16 L16 24 Z" fill="white" opacity="0.9" />
+                            <circle cx="16" cy="16" r="4" fill="white" />
+                            <defs>
+                                <linearGradient id="footerLogoGrad" x1="0" y1="0" x2="32" y2="32">
+                                    <stop offset="0%" stop-color="#0066CC" />
+                                    <stop offset="100%" stop-color="#00AAFF" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <span class="logo-text">VNVD</span>
+                </div>
+                <p>Nền tảng dịch vụ số toàn diện, đồng hành cùng doanh nghiệp Việt Nam trên hành trình chuyển đổi số.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i data-lucide="facebook"></i></a>
+                    <a href="#" aria-label="Youtube"><i data-lucide="youtube"></i></a>
+                    <a href="#" aria-label="Linkedin"><i data-lucide="linkedin"></i></a>
+                    <a href="#" aria-label="Twitter"><i data-lucide="twitter"></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Dịch vụ</h4>
+                <ul>
+                    <li><a href="#">Cloud Computing</a></li>
+                    <li><a href="#">Bảo mật số</a></li>
+                    <li><a href="#">AI & Automation</a></li>
+                    <li><a href="#">Hạ tầng 5G</a></li>
+                    <li><a href="#">Quản trị DN</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Giải pháp</h4>
+                <ul>
+                    <li><a href="#">Doanh nghiệp SME</a></li>
+                    <li><a href="#">Tập đoàn lớn</a></li>
+                    <li><a href="#">Chính phủ số</a></li>
+                    <li><a href="#">Y tế số</a></li>
+                    <li><a href="#">Giáo dục số</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Hỗ trợ</h4>
+                <ul>
+                    <li><a href="#">Tài liệu kỹ thuật</a></li>
+                    <li><a href="#">Trung tâm hỗ trợ</a></li>
+                    <li><a href="#">Chính sách bảo mật</a></li>
+                    <li><a href="#">Điều khoản dịch vụ</a></li>
+                    <li><a href="#">Liên hệ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 VNVD. Bảo lưu mọi quyền. | Giấy phép kinh doanh số: 0100686209</p>
+            <div class="footer-badges">
+                <span class="fbadge"><i data-lucide="shield"></i> ISO 27001</span>
+                <span class="fbadge"><i data-lucide="award"></i> Top 10 ICT</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<aside class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+        <h3><i data-lucide="shopping-cart"></i> Giỏ hàng</h3>
+        <button class="cart-close-btn" id="cartClose" aria-label="Đóng giỏ hàng">
+            <i data-lucide="x"></i>
+        </button>
+    </div>
+    <div class="cart-body" id="cartBody">
+        <div class="cart-empty" id="cartEmpty">
+            <div class="cart-empty-icon"><i data-lucide="shopping-bag"></i></div>
+            <p>Giỏ hàng của bạn đang trống</p>
+            <span>Hãy thêm dịch vụ bạn quan tâm!</span>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+    </div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+        <div class="cart-summary">
+            <div class="cart-summary-row">
+                <span>Tạm tính (<span id="cartCount">0</span> dịch vụ)</span>
+                <span id="cartSubtotal">0 ₫</span>
+            </div>
+            <div class="cart-summary-row cart-total-row">
+                <strong>Tổng cộng</strong>
+                <strong id="cartTotal" class="cart-total-price">0 ₫</strong>
+            </div>
+        </div>
+        <button class="btn-checkout" id="checkoutBtn">
+            <i data-lucide="credit-card"></i> Tiến hành thanh toán
+        </button>
+        <button class="btn-clear-cart" id="clearCartBtn">
+            <i data-lucide="trash-2"></i> Xóa tất cả
+        </button>
+    </div>
+</aside>
+
+<!-- Các Modals Đăng ký / Đăng nhập và Quản trị -->
+<div class="auth-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="auth-modal-inner">
+        <button class="auth-modal-close" id="closeLogin" aria-label="Đóng"><i data-lucide="x"></i></button>
+        <div class="auth-modal-logo">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                <circle cx="22" cy="22" r="22" fill="url(#authLogoGrad)"/>
+                <path d="M11 22 L22 11 L33 22 L22 33 Z" fill="white" opacity="0.9"/>
+                <circle cx="22" cy="22" r="6" fill="white"/>
+                <defs>
+                    <linearGradient id="authLogoGrad" x1="0" y1="0" x2="44" y2="44">
+                        <stop offset="0%" stop-color="#0066CC" />
+                        <stop offset="100%" stop-color="#00AAFF" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span>VNVD</span>
+        </div>
+        <h2 id="loginTitle">Chào mừng trở lại!</h2>
+        <p class="auth-subtitle">Đăng nhập để trải nghiệm dịch vụ số toàn diện</p>
+        <div class="auth-demo-hint">
+            <i data-lucide="info"></i>
+            <span>Tài khoản Admin demo: <strong>admin@vnvd.vn</strong> / <strong>admin123</strong>.</span>
+        </div>
+        <form class="auth-form" id="loginForm" novalidate>
+            <div class="auth-field">
+                <label for="loginEmail">Email</label>
+                <div class="auth-input-wrap">
+                    <i data-lucide="mail"></i>
+                    <input type="email" id="loginEmail" placeholder="email@company.vn" autocomplete="email" required />
+                </div>
+            </div>
+            <div class="auth-field">
+                <label for="loginPassword">Mật khẩu</label>
+                <div class="auth-input-wrap">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" autocomplete="current-password" required />
+                </div>
+            </div>
+            <button type="submit" class="btn-auth-submit" id="loginSubmit">
+                <span>Đăng nhập</span>
+                <i data-lucide="arrow-right"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="toast" id="toast">
+  <i data-lucide="check-circle"></i>
+  <span id="toastMsg">Thao tác thành công!123</span>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/pages.js"></script>
+<script src="js/main.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/carousel.js"></script>
+</body>
+</html>
