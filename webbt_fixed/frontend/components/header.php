@@ -1,23 +1,24 @@
 <?php
 // Sử dụng __DIR__ để lấy đường dẫn tuyệt đối từ thư mục components/ 
 // lùi ra 2 cấp (components -> frontend -> gốc) rồi vào backend/db/
-require_once __DIR__ . '/../../backend/db/database.php';
+//require_once __DIR__ . '/../../backend/db/database.php';
 
 $menuTree = [];
 try {
-    $db = new Database();
-    // Lấy toàn bộ menu đang hoạt động, sắp xếp theo thứ tự
-    $menus = $db->select("SELECT * FROM menu WHERE trang_thai = 1 ORDER BY menu_cha_id, thu_tu ASC");
-    $db->close();
-    
-    // Nhóm các menu lại theo menu_cha_id để dễ dàng tạo dropdown
-    foreach ($menus as $menu) {
-        $parentId = $menu['menu_cha_id'] === null ? 0 : $menu['menu_cha_id'];
-        $menuTree[$parentId][] = $menu;
+    $apiUrl = 'https://deploy-web-g27w.onrender.com/api/menus'; // Route API lấy menu
+    $response = @file_get_contents($apiUrl);
+    if ($response !== false) {
+        $menus = json_decode($response, true);
+        $menus = $menus['data'] ?? $menus;
+        foreach ($menus as $menu) {
+            $parentId = $menu['menu_cha_id'] === null ? 0 : $menu['menu_cha_id'];
+            $menuTree[$parentId][] = $menu;
+        }
     }
 } catch (Exception $e) {
     die("Lỗi lấy dữ liệu menu: " . $e->getMessage());
 }
+
 
 function renderMenuHTML($menuTree, $parentId = 0) {
     if (!isset($menuTree[$parentId])) return '';

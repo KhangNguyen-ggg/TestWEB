@@ -360,34 +360,35 @@
     history.replaceState(null, '', '#home');
   }
 
- async function navigateTo(key) {
+  async function navigateTo(key) {
     if (key === 'home') { goHome(); return; }
     if (key === 'contact') { goHome(); setTimeout(scrollToContact, 200); return; }
 
     try {
-        // Đã sửa đường dẫn gọi API trỏ về thư mục backend
-        const response = await fetch(`../backend/api/pages.php?slug=${key}`);
-        const responseData = await response.json();
+      // Đã sửa đường dẫn gọi API trỏ về thư mục backend
+      // Gọi API đến backend Render
+      const response = await fetch(`https://deploy-web-g27w.onrender.com/api/pages?slug=${key}`);
+      const responseData = await response.json();
 
-        if (responseData.status === 'success') {
-            // Lấy dữ liệu tĩnh cũ
-            const pageInfo = PAGES[key]; 
-            
-            // Trộn dữ liệu mới từ Database vào
-            const updatedPage = {
-                ...pageInfo, // Giữ lại body, icon, breadcrumb cũ
-                title: responseData.data.title,       // Ghi đè bằng title mới
-                subtitle: responseData.data.subtitle,  // Ghi đè bằng subtitle mới
-                icon: responseData.data.icon || pageInfo.icon, // Ghi đè icon nếu có, nếu không giữ lại icon cũ
-            };
+      if (responseData.status === 'success') {
+        // Lấy dữ liệu tĩnh cũ
+        const pageInfo = PAGES[key];
 
-            renderPage(updatedPage);
-            history.replaceState(null, '', '#page=' + key);
-        }
+        // Trộn dữ liệu mới từ Database vào
+        const updatedPage = {
+          ...pageInfo, // Giữ lại body, icon, breadcrumb cũ
+          title: responseData.data.title,       // Ghi đè bằng title mới
+          subtitle: responseData.data.subtitle,  // Ghi đè bằng subtitle mới
+          icon: responseData.data.icon || pageInfo.icon, // Ghi đè icon nếu có, nếu không giữ lại icon cũ
+        };
+
+        renderPage(updatedPage);
+        history.replaceState(null, '', '#page=' + key);
+      }
     } catch (err) {
-        console.error('Lỗi kết nối:', err);
+      console.error('Lỗi kết nối:', err);
     }
-}
+  }
 
   // Expose globally so cart/checkout & other modules can use
   window.VNVDRouter = { navigateTo, goHome };

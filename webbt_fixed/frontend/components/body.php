@@ -175,16 +175,17 @@
   </div>
 </div>
 <?php
-// Lấy dữ liệu 3 dịch vụ nổi bật dựa trên lượt bán và lượt xem từ Database
+// Lấy dữ liệu 3 dịch vụ nổi bật
 $featuredServices = [];
 try {
-    $db = new Database();
-    $featuredServices = $db->select("SELECT * FROM san_pham 
-                                      WHERE loai_san_pham = 'dich_vu_so' 
-                                        AND trang_thai = 'dang_ban' 
-                                      ORDER BY luot_ban DESC, luot_xem DESC 
-                                      LIMIT 3");
-    $db->close();
+    // Gọi API Node.js trên Render thay vì query DB trực tiếp
+    $apiUrl = 'https://deploy-web-g27w.onrender.com/api/products?type=dich_vu_so&limit=3&featured=true';
+    $response = @file_get_contents($apiUrl);
+    if ($response !== false) {
+        $resData = json_decode($response, true);
+        // Giả sử API trả về { products: [...] }
+        $featuredServices = $resData['products'] ?? $resData['data'] ?? []; 
+    }
 } catch (Exception $e) {
     $featuredServices = [];
 }
@@ -272,10 +273,15 @@ try {
 <?php
 $allServices = [];
 try {
-    $db = new Database();
-    $allServices = $db->select("SELECT * FROM san_pham WHERE loai_san_pham = 'dich_vu_so' AND trang_thai = 'dang_ban'");
-    $db->close();
+    $apiUrl = 'https://deploy-web-g27w.onrender.com/api/products?type=dich_vu_so';
+    $response = @file_get_contents($apiUrl);
+    if ($response !== false) {
+        $resData = json_decode($response, true);
+        $allServices = $resData['products'] ?? $resData['data'] ?? [];
+    }
 } catch (Exception $e) {}
+
+// Ánh xạ UI... (giữ nguyên phần sau)
 
 // Ánh xạ UI dạng mảng nén (Packed Array): [Icon, Màu sắc, [Tính năng 1, 2, 3], IsFeatured]
 $uiMap = [
@@ -337,16 +343,18 @@ $uiMap = [
 </section>
 
 <?php
-// 1. Truy vấn các gói Combo bảng giá từ database
+// 1. Truy vấn các gói Combo từ API
 $allCombos = [];
 try {
-    $db = new Database();
-    $allCombos = $db->select("SELECT * FROM san_pham 
-                               WHERE loai_san_pham = 'combo' 
-                                 AND trang_thai = 'dang_ban' 
-                               ORDER BY gia_niem_yet ASC");
-    $db->close();
+    $apiUrl = 'https://deploy-web-g27w.onrender.com/api/products?type=combo';
+    $response = @file_get_contents($apiUrl);
+    if ($response !== false) {
+        $resData = json_decode($response, true);
+        $allCombos = $resData['products'] ?? $resData['data'] ?? [];
+    }
 } catch (Exception $e) {}
+
+// 2. Mảng ánh xạ UI... (giữ nguyên phần sau)
 
 // 2. Mảng ánh xạ UI nén gọn: [Icon, Màu sắc, [Danh sách tính năng], IsPopular]
 $comboMap = [
