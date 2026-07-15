@@ -18,6 +18,9 @@ const pool = mysql.createPool({
   charset: 'utf8mb4',
   // Trả DECIMAL/BIGINT về dạng số JS khi an toàn (giá tiền < 2^53)
   decimalNumbers: true,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 /**
