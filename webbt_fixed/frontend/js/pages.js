@@ -365,7 +365,6 @@
     if (key === 'contact') { goHome(); setTimeout(scrollToContact, 200); return; }
 
     try {
-      // Đã sửa đường dẫn gọi API trỏ về thư mục backend
       // Gọi API đến backend Render
       const response = await fetch(`https://deploy-web-g27w.onrender.com/api/pages?slug=${key}`);
       const responseData = await response.json();

@@ -1,93 +1,46 @@
 <?php
-// Sử dụng __DIR__ để lấy đường dẫn tuyệt đối từ thư mục components/ 
-// lùi ra 2 cấp (components -> frontend -> gốc) rồi vào backend/db/
-//require_once __DIR__ . '/../../backend/db/database.php';
-
-// $menuTree = [];
-// // try {
-// //     $apiUrl = 'https://deploy-web-g27w.onrender.com/api/menus'; // Route API lấy menu
-// //     $response = @file_get_contents($apiUrl);
-// //     if ($response !== false) {
-// //         $menus = json_decode($response, true);
-// //         $menus = $menus['data'] ?? $menus;
-// //         foreach ($menus as $menu) {
-// //             $parentId = $menu['menu_cha_id'] === null ? 0 : $menu['menu_cha_id'];
-// //             $menuTree[$parentId][] = $menu;
-// //         }
-// //     }
-// // } catch (Exception $e) {
-// //     die("Lỗi lấy dữ liệu menu: " . $e->getMessage());
-// // }
-// $apiUrl = 'https://deploy-web-g27w.onrender.com/api/menus';
-// $response = @file_get_contents($apiUrl);
-// $menus = json_decode($response, true) ?? [];
-
-// $menuTree = [];
-// foreach ($menus as $menu) {
-//     $parentId = $menu['menu_cha_id'] === null ? 0 : $menu['menu_cha_id'];
-//     $menuTree[$parentId][] = $menu;
-// }
-
-
-// function renderMenuHTML($menuTree, $parentId = 0) {
-//     if (!isset($menuTree[$parentId])) return '';
-
-//     $html = '';
-//     foreach ($menuTree[$parentId] as $item) {
-//         $hasChild = isset($menuTree[$item['id']]);
-//         $link = !empty($item['link']) ? $item['link'] : '#';
-//         $dataPage = !empty($item['slug']) ? ' data-page="' . htmlspecialchars($item['slug']) . '"' : '';
-
-//         if ($parentId == 0) {
-//             if ($hasChild) {
-//                 $html .= '<div class="nav-item dropdown">';
-//                 $html .= '<a href="'.$link.'" class="nav-link"'.$dataPage.'>'.htmlspecialchars($item['ten_menu']).' <i data-lucide="chevron-down" class="icon-sm"></i></a>';
-//                 $html .= '<div class="dropdown-menu">';
-//                 $html .= renderMenuHTML($menuTree, $item['id']);
-//                 $html .= '</div>';
-//                 $html .= '</div>';
-//             } else {
-//                 $html .= '<a href="'.$link.'" class="nav-link"'.$dataPage.'>'.htmlspecialchars($item['ten_menu']).'</a>';
-//             }
-//         } else {
-//             $html .= '<a href="'.$link.'"'.$dataPage.'>'.htmlspecialchars($item['ten_menu']).'</a>';
-//         }
-//     }
-//     return $html;
-// }
-?>
-
-
-<?php
-// URL API của backend trên Render
+// Gọi API từ Render
 $apiUrl = 'https://deploy-web-g27w.onrender.com/api/menus';
-
-// 1. Gọi API
 $response = @file_get_contents($apiUrl);
+$menus = [];
 
-// 2. Xử lý lỗi nếu không kết nối được server Render
-if ($response === false) {
-    die("<div style='padding: 20px; color: red; font-weight: bold;'>Lỗi nghiêm trọng: Không thể kết nối đến máy chủ API (Render) để tải Menu. Vui lòng kiểm tra lại backend.</div>");
+if ($response !== false) {
+    $parsed = json_decode($response, true);
+    // Tương thích với các định dạng trả về khác nhau ({"data": [...]} hoặc trực tiếp [...])
+    $menus = $parsed['data'] ?? $parsed ?? [];
 }
 
-$parsed = json_decode($response, true);
-
-// 3. Xử lý lỗi nếu dữ liệu trả về không phải JSON
-if (json_last_error() !== JSON_ERROR_NONE) {
-    die("<div style='padding: 20px; color: red; font-weight: bold;'>Lỗi nghiêm trọng: Dữ liệu Menu từ API trả về không hợp lệ.</div>");
-}
-
-// Lấy mảng data từ JSON
-$menus = $parsed['data'] ?? [];
-
-// 4. Xử lý lỗi nếu database chưa có menu nào
+// NẾU API LỖI HOẶC CHƯA CÓ, SỬ DỤNG DỮ LIỆU DỰ PHÒNG (FALLBACK) ĐỂ MENU KHÔNG BỊ TRỐNG
 if (empty($menus)) {
-    die("<div style='padding: 20px; color: red; font-weight: bold;'>Lỗi: Danh sách menu trống. Hãy kiểm tra lại Database (bảng `menu`).</div>");
+    $menus = [
+        ['id' => 1, 'ten_menu' => 'Về chúng tôi', 'slug' => 'gioi-thieu', 'link' => '#', 'menu_cha_id' => null],
+        ['id' => 2, 'ten_menu' => 'Dịch vụ', 'slug' => 'cloud-computing', 'link' => '#', 'menu_cha_id' => null],
+        ['id' => 3, 'ten_menu' => 'Giải pháp', 'slug' => 'gp-sme', 'link' => '#', 'menu_cha_id' => null],
+        ['id' => 4, 'ten_menu' => 'Bảng giá', 'slug' => '', 'link' => '#pricing', 'menu_cha_id' => null],
+        ['id' => 5, 'ten_menu' => 'Hệ sinh thái', 'slug' => 'he-sinh-thai', 'link' => '#', 'menu_cha_id' => null],
+        ['id' => 6, 'ten_menu' => 'Tin tức', 'slug' => 'thong-cao-bao-chi', 'link' => '#', 'menu_cha_id' => null],
+        ['id' => 7, 'ten_menu' => 'Đối tác', 'slug' => 'doi-tac', 'link' => '#', 'menu_cha_id' => null],
+        ['id' => 8, 'ten_menu' => 'Liên hệ', 'slug' => '', 'link' => '#contact', 'menu_cha_id' => null],
+        // Menu con
+        ['id' => 9, 'ten_menu' => 'Giới thiệu', 'slug' => 'gioi-thieu', 'link' => '#', 'menu_cha_id' => 1],
+        ['id' => 10, 'ten_menu' => 'Tầm nhìn & Sứ mệnh', 'slug' => 'tam-nhin-su-menh', 'link' => '#', 'menu_cha_id' => 1],
+        ['id' => 11, 'ten_menu' => 'Đội ngũ lãnh đạo', 'slug' => 'doi-ngu-lanh-dao', 'link' => '#', 'menu_cha_id' => 1],
+        ['id' => 12, 'ten_menu' => 'Thành tựu', 'slug' => 'thanh-tuu', 'link' => '#', 'menu_cha_id' => 1],
+        ['id' => 13, 'ten_menu' => 'Hạ tầng số', 'slug' => 'ha-tang-so', 'link' => '#', 'menu_cha_id' => 2],
+        ['id' => 14, 'ten_menu' => 'Bảo mật & An toàn', 'slug' => 'bao-mat-an-toan', 'link' => '#', 'menu_cha_id' => 2],
+        ['id' => 15, 'ten_menu' => 'Cloud Computing', 'slug' => 'cloud-computing', 'link' => '#', 'menu_cha_id' => 2],
+        ['id' => 16, 'ten_menu' => 'AI & Tự động hóa', 'slug' => 'ai-tu-dong-hoa', 'link' => '#', 'menu_cha_id' => 2],
+        ['id' => 17, 'ten_menu' => 'Doanh nghiệp vừa & nhỏ', 'slug' => 'gp-sme', 'link' => '#', 'menu_cha_id' => 3],
+        ['id' => 18, 'ten_menu' => 'Tập đoàn lớn', 'slug' => 'gp-enterprise', 'link' => '#', 'menu_cha_id' => 3],
+        ['id' => 19, 'ten_menu' => 'Chính phủ số', 'slug' => 'gp-chinh-phu', 'link' => '#', 'menu_cha_id' => 3],
+        ['id' => 20, 'ten_menu' => 'Y tế & Giáo dục', 'slug' => 'gp-yte-giaoduc', 'link' => '#', 'menu_cha_id' => 3],
+        ['id' => 21, 'ten_menu' => 'Thông cáo báo chí', 'slug' => 'thong-cao-bao-chi', 'link' => '#', 'menu_cha_id' => 6],
+        ['id' => 22, 'ten_menu' => 'Blog công nghệ', 'slug' => 'blog-cong-nghe', 'link' => '#', 'menu_cha_id' => 6],
+        ['id' => 23, 'ten_menu' => 'Sự kiện', 'slug' => 'su-kien', 'link' => '#', 'menu_cha_id' => 6],
+    ];
 }
 
 $menuTree = [];
-
-// Nhóm các menu lại theo menu_cha_id để tạo dropdown
 foreach ($menus as $menu) {
     $parentId = $menu['menu_cha_id'] === null ? 0 : $menu['menu_cha_id'];
     $menuTree[$parentId][] = $menu;
@@ -120,7 +73,6 @@ function renderMenuHTML($menuTree, $parentId = 0) {
     return $html;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -140,7 +92,6 @@ function renderMenuHTML($menuTree, $parentId = 0) {
 
   <div class="top-bar">
     <div class="top-bar-container">
-      <!-- Sửa href="#" thành "index.php" để click vào logo thì về trang chủ -->
       <a href="index.php" class="nav-logo">
         <div class="logo-icon">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
