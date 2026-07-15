@@ -28,6 +28,7 @@ const productRoutes = require('./api/products');
 const cartRoutes = require('./api/cart');
 const orderRoutes = require('./api/orders');
 const adminRoutes = require('./api/admin');
+const pagesRoutes = require('./api/pages');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -78,6 +79,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/menus', menuRoutes);
+app.use('/api/pages', pagesRoutes);
 
 // Healthcheck
 app.get('/api/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
