@@ -11,11 +11,8 @@
  *       /api/admin     (quản trị — cần role admin)
  *   - /api/chat        (proxy chatbot AI Google Gemini — giữ nguyên như bản cũ)
  */
-// Khai báo ở trên cùng
-const menuRoutes = require('./api/menus');
 
-// Thêm vào phần /* ============ REST API (MySQL) ============ */
-app.use('/api/menus', menuRoutes);
+
 
 require('dotenv').config();
 const express = require('express');
@@ -25,6 +22,7 @@ const path = require('path');
 const { checkConnection } = require('./db/db');
 const { attachUser } = require('./api/auth-mw');
 
+const menuRoutes = require('./api/menus');
 const authRoutes = require('./api/auth');
 const productRoutes = require('./api/products');
 const cartRoutes = require('./api/cart');
