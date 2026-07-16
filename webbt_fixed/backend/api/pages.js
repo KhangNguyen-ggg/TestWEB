@@ -6,7 +6,6 @@ router.get('/', async (req, res) => {
   try {
     const slug = req.query.slug || '';
     
-    // Kiểm tra tính hợp lệ của slug (giống hệt code PHP cũ)
     if (!slug || !/^[a-z0-9\-]+$/.test(slug)) {
       return res.status(400).json({ status: 'error', message: 'Slug không hợp lệ' });
     }
