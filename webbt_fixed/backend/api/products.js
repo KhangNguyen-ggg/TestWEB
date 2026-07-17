@@ -20,11 +20,27 @@ router.get('/', async (req, res) => {
     const params = [];
     if (req.query.type) { where.push('loai_san_pham = ?'); params.push(req.query.type); }
     if (req.query.category) { where.push('danh_muc_id = ?'); params.push(Number(req.query.category)); }
+    // 2. Xử lý sắp xếp (featured)
+    let orderBy = 'ORDER BY danh_muc_id, id'; // Mặc định
+    if (req.query.featured === 'true') {
+      // Sắp xếp theo lượt bán và lượt xem nếu có yêu cầu featured
+      orderBy = 'ORDER BY luot_ban DESC, luot_xem DESC';
+    }
+    // 3. Xử lý giới hạn số lượng (limit)
+    let limitClause = '';
+    if (req.query.limit) {
+      const limitVal = Number(req.query.limit);
+      if (!isNaN(limitVal) && limitVal > 0) {
+        limitClause = `LIMIT ${limitVal}`;
+      }
+    }
 
-    const [rows] = await pool.query(
-      `SELECT ${SELECT_COLS} FROM san_pham WHERE ${where.join(' AND ')} ORDER BY danh_muc_id, id`,
-      params
-    );
+    // const [rows] = await pool.query(
+    //   `SELECT ${SELECT_COLS} FROM san_pham WHERE ${where.join(' AND ')} ORDER BY danh_muc_id, id`,
+    //   params
+    // );
+    const sqlQuery = `SELECT ${SELECT_COLS} FROM san_pham WHERE ${where.join(' AND ')} ${orderBy} ${limitClause}`;
+    const [rows] = await pool.query(sqlQuery, params);
     return res.json({ products: rows.map(shapeProduct) });
   } catch (err) {
     console.error('GET /api/products:', err);
