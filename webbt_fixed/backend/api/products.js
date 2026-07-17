@@ -18,15 +18,21 @@ router.get('/', async (req, res) => {
   try {
     const where = [`trang_thai = 'dang_ban'`];
     const params = [];
-    if (req.query.type) { where.push('loai_san_pham = ?'); params.push(req.query.type); }
-    if (req.query.category) { where.push('danh_muc_id = ?'); params.push(Number(req.query.category)); }
-    // 2. Xử lý sắp xếp (featured)
-    let orderBy = 'ORDER BY danh_muc_id, id'; // Mặc định
+    
+    if (req.query.type) { 
+      where.push('loai_san_pham = ?'); 
+      params.push(req.query.type); 
+    }
+    if (req.query.category) { 
+      where.push('danh_muc_id = ?'); 
+      params.push(Number(req.query.category)); 
+    }
+
+    let orderBy = 'ORDER BY danh_muc_id, id';
     if (req.query.featured === 'true') {
-      // Sắp xếp theo lượt bán và lượt xem nếu có yêu cầu featured
       orderBy = 'ORDER BY luot_ban DESC, luot_xem DESC';
     }
-    // 3. Xử lý giới hạn số lượng (limit)
+
     let limitClause = '';
     if (req.query.limit) {
       const limitVal = Number(req.query.limit);
@@ -35,13 +41,11 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // const [rows] = await pool.query(
-    //   `SELECT ${SELECT_COLS} FROM san_pham WHERE ${where.join(' AND ')} ORDER BY danh_muc_id, id`,
-    //   params
-    // );
     const sqlQuery = `SELECT ${SELECT_COLS} FROM san_pham WHERE ${where.join(' AND ')} ${orderBy} ${limitClause}`;
     const [rows] = await pool.query(sqlQuery, params);
-    return res.json({ products: rows.map(shapeProduct) });
+    
+    // ĐÃ SỬA: Trả về trực tiếp mảng rows nguyên bản từ Database
+    return res.json({ products: rows }); 
   } catch (err) {
     console.error('GET /api/products:', err);
     return res.status(500).json({ error: 'Không tải được danh sách sản phẩm.' });
@@ -56,7 +60,9 @@ router.get('/:code', async (req, res) => {
       [req.params.code]
     );
     if (!rows.length) return res.status(404).json({ error: 'Không tìm thấy sản phẩm.' });
-    return res.json({ product: shapeProduct(rows[0]) });
+    
+    // ĐÃ SỬA: Trả về trực tiếp rows[0]
+    return res.json({ product: rows[0] });
   } catch (err) {
     console.error('GET /api/products/:code:', err);
     return res.status(500).json({ error: 'Lỗi server.' });
