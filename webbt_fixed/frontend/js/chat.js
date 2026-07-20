@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const MAX_HISTORY = 20;
 
   // Dùng relative URL để hoạt động trên mọi host/port
-  const API_ENDPOINT = 'https://deploy-web-g27w.onrender.com/api/chat';
+  const API_ENDPOINT = 'https://testweb-3dku.onrender.com/api/chat';
 
   function nowLabel() {
     return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
