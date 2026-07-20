@@ -41,8 +41,22 @@ router.post('/register', async (req, res) => {
       [hoTen, email, phone || null, hashedPassword]
     );
 
-    return res.json({ status: 'success', message: 'Đăng ký tài khoản thành công!' });
+    // THÊM MỚI: Tạo mã Token (JWT) định danh người dùng từ ID vừa được insert
+    const token = jwt.sign(
+      { id: result.insertId, email: email, name: hoTen, role: 'customer' },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
 
+    // CẬP NHẬT: Trả về kết quả kèm theo token và thông tin user cho Frontend
+    return res.json({ 
+      status: 'success', 
+      message: 'Đăng ký tài khoản thành công!',
+      token: token,
+      user: { id: result.insertId, name: hoTen, email: email, role: 'customer' }
+    });
+
+    
   } catch (error) {
     console.error('Lỗi Đăng ký:', error);
     return res.status(500).json({ status: 'error', message: 'Lỗi máy chủ' });
@@ -66,7 +80,7 @@ router.post('/login', async (req, res) => {
 
     // Ưu tiên 1: Tìm trong bảng Nhân viên (Admin) trước
     const [admins] = await pool.query("SELECT * FROM nhan_vien WHERE email = ? LIMIT 1", [email]);
-    
+
     if (admins.length > 0) {
       user = admins[0];
       role = user.vai_tro_id === 1 ? 'admin' : 'staff';
