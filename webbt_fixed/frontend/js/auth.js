@@ -1,13 +1,12 @@
 /**
- * VNVD — Auth Module (kết nối backend + fallback localStorage)
+ * VNVD — Auth Module (kết nối trực tiếp Render API)
  * Handles: Login, Register, Logout, User menu, Password strength, Form validation
- *
- * Chế độ hoạt động:
- *  - ONLINE  (có backend /api): gọi VNVDApi.register/login/me, lưu JWT + user.
- *  - OFFLINE (bản tĩnh, không backend): tự chuyển sang localStorage như bản demo cũ.
  */
 (function () {
   'use strict';
+
+  // API URL trên Render
+  const API_URL = 'https://deploy-web-g27w.onrender.com/api/auth';
 
   /* ---- DOM refs ---- */
   const loginModal      = document.getElementById('loginModal');
@@ -36,17 +35,6 @@
   const pwStrengthLabel = document.getElementById('pwStrengthLabel');
   const regPassword     = document.getElementById('regPassword');
 
-  /* ---- Backend availability ---- */
-  const Api = window.VNVDApi || null;
-  // true nếu đã dò được backend sống. Nếu chưa dò xong, chờ tối đa ~2.5s.
-  async function backendReady() {
-    if (!Api) return false;
-    if (Api.available === null) {
-      try { await Api.detect(); } catch (_e) { /* ignore */ }
-    }
-    return !!Api.available;
-  }
-
   /* ---- Helpers ---- */
   function showToast(msg, isError) {
     const toast = document.getElementById('toast');
@@ -73,14 +61,7 @@
     document.querySelectorAll('.auth-input-wrap input.error').forEach(el => el.classList.remove('error'));
   }
 
-  /* ---- localStorage helpers (dùng cho fallback OFFLINE + lưu user hiện tại) ---- */
-  function getUsers() {
-    try { return JSON.parse(localStorage.getItem('vnvd_users') || '[]'); }
-    catch { return []; }
-  }
-  function saveUsers(users) {
-    localStorage.setItem('vnvd_users', JSON.stringify(users));
-  }
+  /* ---- LocalStorage User State ---- */
   function getCurrentUser() {
     try { return JSON.parse(localStorage.getItem('vnvd_user') || 'null'); }
     catch { return null; }
@@ -89,31 +70,20 @@
     if (user) localStorage.setItem('vnvd_user', JSON.stringify(user));
     else localStorage.removeItem('vnvd_user');
   }
-
-  /* ---- Seed default ADMIN account (chỉ cho chế độ OFFLINE demo) ---- */
-  function seedAdmin() {
-    const users = getUsers();
-    if (!users.find(u => u.email === 'admin@vnvd.vn')) {
-      users.push({
-        id: 'admin-root',
-        firstName: 'Quản trị',
-        lastName: 'viên',
-        email: 'admin@vnvd.vn',
-        phone: '1800 1260',
-        password: 'admin123',
-        role: 'admin'
-      });
-      saveUsers(users);
-    }
+  function getToken() {
+    return localStorage.getItem('vnvd_token') || '';
   }
-  seedAdmin();
+  function setToken(token) {
+    if (token) localStorage.setItem('vnvd_token', token);
+    else localStorage.removeItem('vnvd_token');
+  }
 
   /* ---- Role helpers (exposed for admin.js) ---- */
   function isAdmin() {
     const u = getCurrentUser();
     return !!(u && u.role === 'admin');
   }
-  window.VNVDAuth = { getCurrentUser, isAdmin, getUsers };
+  window.VNVDAuth = { getCurrentUser, isAdmin, getToken };
 
   /* ---- Modal open/close ---- */
   function openModal(modal) {
@@ -139,19 +109,30 @@
   /* ---- UI state: logged in / out ---- */
   function updateAuthUI() {
     const user = getCurrentUser();
-    if (user) {
+    const token = getToken();
+
+    if (user && token) {
       authBtns && (authBtns.style.display = 'none');
       userMenu && (userMenu.style.display = 'flex');
-      const initials = ((user.firstName || '')[0] + (user.lastName || '')[0]).toUpperCase() || 'U';
-      if (userAvatarCircle) userAvatarCircle.textContent = initials;
-      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+      
+      const firstName = user.firstName || user.name || '';
+      const lastName = user.lastName || '';
+      const fullName = `${firstName} ${lastName}`.trim() || user.email;
+      const initials = (firstName[0] || 'U').toUpperCase();
       const role = user.role || 'customer';
       const roleLabel = role === 'admin' ? 'Quản trị viên' : 'Khách hàng';
+      
+      if (userAvatarCircle) userAvatarCircle.textContent = initials;
       if (userDisplayName) userDisplayName.textContent = fullName;
       if (userDropdownName) {
         userDropdownName.innerHTML = `${fullName} <span class="role-badge ${role}">${roleLabel}</span>`;
       }
       if (userDropdownEmail) userDropdownEmail.textContent = user.email;
+      
+      // Quản lý hiển thị nút Admin
+      const adminBtn = document.getElementById('openAdminBtn');
+      if (adminBtn) adminBtn.style.display = role === 'admin' ? 'flex' : 'none';
+
       document.body.classList.toggle('is-admin', role === 'admin');
     } else {
       authBtns && (authBtns.style.display = 'flex');
@@ -234,35 +215,30 @@
       if (loginError) { loginError.textContent = msg; loginError.style.display = 'block'; }
     };
 
-    if (await backendReady()) {
-      // ---- ONLINE: gọi API ----
-      try {
-        const { token, user } = await Api.login(email, password);
-        Api.setToken(token);
-        setCurrentUser(user);
+    // Gọi API Render
+    try {
+      const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setToken(data.token);
+        setCurrentUser(data.user);
         finish();
         updateAuthUI();
         closeAllModals();
         loginForm.reset();
-        showToast(`Chào mừng trở lại, ${user.firstName || user.email}! 👋`);
-      } catch (err) {
-        failLogin(err.message || 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.');
+        showToast(`Chào mừng trở lại, ${data.user.name || data.user.firstName}! 👋`);
+      } else {
+        failLogin(data.message || data.error || 'Đăng nhập thất bại.');
       }
-      return;
+    } catch (err) {
+      console.error(err);
+      failLogin('Lỗi mạng: Không thể kết nối máy chủ.');
     }
-
-    // ---- OFFLINE: localStorage ----
-    setTimeout(() => {
-      const users = getUsers();
-      const user  = users.find(u => u.email === email && u.password === password);
-      if (!user) { failLogin('Email hoặc mật khẩu không đúng. Vui lòng thử lại.'); return; }
-      finish();
-      setCurrentUser(user);
-      updateAuthUI();
-      closeAllModals();
-      loginForm.reset();
-      showToast(`Chào mừng trở lại, ${user.firstName || user.email}! 👋`);
-    }, 700);
   });
 
   /* ---- Register form ---- */
@@ -308,40 +284,34 @@
       finish();
       if (registerError) { registerError.textContent = msg; registerError.style.display = 'block'; }
     };
-    const succeed = (user) => {
-      finish();
-      setCurrentUser(user);
-      updateAuthUI();
-      closeAllModals();
-      registerForm.reset();
-      checkPasswordStrength('');
-      showToast(`Đăng ký thành công! Chào mừng ${user.firstName} đến với VNVD 🎉`);
-    };
 
-    if (await backendReady()) {
-      // ---- ONLINE: gọi API ----
-      try {
-        const { token, user } = await Api.register({ firstName, lastName, email, phone, password });
-        Api.setToken(token);
-        succeed(user);
-      } catch (err) {
-        failReg(err.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+    // Gọi API Render
+    try {
+      const response = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, email, phone, password })
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.token) {
+          setToken(data.token);
+          setCurrentUser(data.user);
+        }
+        finish();
+        updateAuthUI();
+        closeAllModals();
+        registerForm.reset();
+        checkPasswordStrength('');
+        showToast(`Đăng ký thành công! Chào mừng ${firstName} đến với VNVD 🎉`);
+      } else {
+        failReg(data.message || data.error || 'Đăng ký thất bại.');
       }
-      return;
+    } catch (err) {
+      console.error(err);
+      failReg('Lỗi mạng: Không thể kết nối máy chủ.');
     }
-
-    // ---- OFFLINE: localStorage ----
-    setTimeout(() => {
-      const users = getUsers();
-      if (users.find(u => u.email === email)) {
-        failReg('Email này đã được đăng ký. Vui lòng đăng nhập hoặc dùng email khác.');
-        return;
-      }
-      const newUser = { id: Date.now(), firstName, lastName, email, phone, password, role: 'customer' };
-      users.push(newUser);
-      saveUsers(users);
-      succeed(newUser);
-    }, 800);
   });
 
   /* ---- Password strength live ---- */
@@ -350,7 +320,7 @@
   /* ---- Logout ---- */
   logoutBtn?.addEventListener('click', () => {
     setCurrentUser(null);
-    if (Api) Api.setToken('');
+    setToken('');
     updateAuthUI();
     userMenu?.classList.remove('open');
     showToast('Đã đăng xuất thành công');
@@ -381,20 +351,12 @@
     setTimeout(() => openModal(loginModal), 150);
   });
 
-  /* ---- Social login (demo — chỉ hoạt động chế độ OFFLINE) ---- */
+  /* ---- Social login (demo) ---- */
   document.getElementById('loginGoogle')?.addEventListener('click', () => {
-    const demoUser = { id: 'google-demo', firstName: 'Google', lastName: 'User', email: 'google.user@gmail.com', phone: '', role: 'customer' };
-    setCurrentUser(demoUser);
-    updateAuthUI();
-    closeAllModals();
-    showToast('Đăng nhập bằng Google thành công! 🎉');
+    showToast('Chức năng đăng nhập Google đang được bảo trì.', true);
   });
   document.getElementById('loginFacebook')?.addEventListener('click', () => {
-    const demoUser = { id: 'fb-demo', firstName: 'Facebook', lastName: 'User', email: 'fb.user@facebook.com', phone: '', role: 'customer' };
-    setCurrentUser(demoUser);
-    updateAuthUI();
-    closeAllModals();
-    showToast('Đăng nhập bằng Facebook thành công! 🎉');
+    showToast('Chức năng đăng nhập Facebook đang được bảo trì.', true);
   });
 
   /* ---- Forgot password (demo) ---- */
@@ -413,16 +375,24 @@
     if (e.key === 'Escape') closeAllModals();
   });
 
-  /* ---- Khôi phục phiên đăng nhập từ token (ONLINE) ---- */
+  /* ---- Khôi phục phiên đăng nhập từ token trên Render ---- */
   async function restoreSession() {
-    if (await backendReady() && Api.getToken()) {
+    const token = getToken();
+    if (token) {
       try {
-        const { user } = await Api.me();
-        setCurrentUser(user);
-      } catch (_e) {
-        // token hỏng/hết hạn → đăng xuất cục bộ
-        Api.setToken('');
-        setCurrentUser(null);
+        const response = await fetch(`${API_URL}/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentUser(data.user);
+        } else {
+          // Token hết hạn hoặc không hợp lệ
+          setToken('');
+          setCurrentUser(null);
+        }
+      } catch (err) {
+        console.error('Lỗi khôi phục session:', err);
       }
     }
     updateAuthUI();
@@ -433,7 +403,6 @@
     restoreSession();
     if (window.lucide) lucide.createIcons();
   });
-  // Nếu DOM đã sẵn sàng (script nạp sau DOMContentLoaded), gọi luôn.
   if (document.readyState !== 'loading') restoreSession();
 
 })();

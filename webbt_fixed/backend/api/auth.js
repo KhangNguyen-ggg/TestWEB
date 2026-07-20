@@ -1,137 +1,118 @@
-/**
- * routes/auth.js — Xác thực & phân quyền
- *   POST /api/auth/register  Đăng ký khách hàng (khach_hang)
- *   POST /api/auth/login     Đăng nhập (admin từ nhan_vien, customer từ khach_hang)
- *   GET  /api/auth/me        Lấy thông tin người đang đăng nhập (theo JWT)
- */
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { pool } = require('../db/db');
-const { hashPassword, comparePassword, signToken, requireAuth } = require('./auth-mw');
-const { shapeCustomer, shapeAdmin, joinName } = require('./shape');
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Khóa bí mật để tạo Token (Trong thực tế nên để trong file .env)
+const JWT_SECRET = process.env.JWT_SECRET || 'vnvd_super_secret_key_2026';
 
-/* ---------- POST /api/auth/register ---------- */
+/* ========================================================
+ * 1. API ĐĂNG KÝ TÀI KHOẢN (Chỉ dành cho khách hàng)
+ * ======================================================== */
 router.post('/register', async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, password } = req.body || {};
-    if (!firstName || !String(firstName).trim()) {
-      return res.status(400).json({ error: 'Vui lòng nhập họ.' });
-    }
-    if (!email || !EMAIL_RE.test(email)) {
-      return res.status(400).json({ error: 'Email không hợp lệ.' });
-    }
-    if (!password || String(password).length < 8) {
-      return res.status(400).json({ error: 'Mật khẩu tối thiểu 8 ký tự.' });
+    const { firstName, lastName, email, phone, password } = req.body;
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ status: 'error', message: 'Vui lòng nhập đủ thông tin bắt buộc' });
     }
 
-    // Email đã tồn tại?
-    const [dup] = await pool.query('SELECT id FROM khach_hang WHERE email = ? LIMIT 1', [email]);
-    if (dup.length) {
-      return res.status(409).json({ error: 'Email này đã được đăng ký. Vui lòng đăng nhập hoặc dùng email khác.' });
-    }
+    const hoTen = `${firstName.trim()} ${lastName.trim()}`;
 
-    const hash = await hashPassword(password);
-    const hoTen = joinName(firstName, lastName);
-    const [result] = await pool.query(
-      `INSERT INTO khach_hang (ho_ten, email, so_dien_thoai, mat_khau_hash, trang_thai, da_xac_thuc_email)
-       VALUES (?, ?, ?, ?, 'hoat_dong', TRUE)`,
-      [hoTen, email, phone || null, hash]
+    // Kiểm tra xem Email hoặc SĐT đã tồn tại chưa
+    const [existing] = await pool.query(
+      "SELECT id FROM khach_hang WHERE email = ? OR so_dien_thoai = ?",
+      [email, phone || null]
     );
 
-    const user = {
-      id: result.insertId,
-      firstName: String(firstName).trim(),
-      lastName: String(lastName || '').trim(),
-      email,
-      phone: phone || '',
-      role: 'customer',
-    };
-    const token = signToken({ id: user.id, loai: 'customer', role: 'customer', email, ho_ten: hoTen });
-    return res.status(201).json({ token, user });
-  } catch (err) {
-    // Xử lý trùng số điện thoại (UNIQUE) rõ ràng
-    if (err && err.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ error: 'Email hoặc số điện thoại đã tồn tại.' });
+    if (existing.length > 0) {
+      return res.status(400).json({ status: 'error', message: 'Email hoặc Số điện thoại đã được sử dụng!' });
     }
-    console.error('POST /api/auth/register:', err);
-    return res.status(500).json({ error: 'Lỗi server khi đăng ký. Vui lòng thử lại.' });
+
+    // Mã hóa mật khẩu
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Lưu vào database
+    const [result] = await pool.query(
+      "INSERT INTO khach_hang (ho_ten, email, so_dien_thoai, mat_khau_hash) VALUES (?, ?, ?, ?)",
+      [hoTen, email, phone || null, hashedPassword]
+    );
+
+    return res.json({ status: 'success', message: 'Đăng ký tài khoản thành công!' });
+
+  } catch (error) {
+    console.error('Lỗi Đăng ký:', error);
+    return res.status(500).json({ status: 'error', message: 'Lỗi máy chủ' });
   }
 });
 
-/* ---------- POST /api/auth/login ---------- */
+/* ========================================================
+ * 2. API ĐĂNG NHẬP (Quét cả Admin và Khách hàng)
+ * ======================================================== */
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body || {};
-    if (!email || !EMAIL_RE.test(email)) {
-      return res.status(400).json({ error: 'Email không hợp lệ.' });
-    }
-    if (!password) {
-      return res.status(400).json({ error: 'Vui lòng nhập mật khẩu.' });
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ status: 'error', message: 'Vui lòng nhập Email và Mật khẩu' });
     }
 
-    // 1) Thử tài khoản NHÂN VIÊN (admin) trước
-    const [admins] = await pool.query(
-      `SELECT nv.id, nv.ho_ten, nv.email, nv.mat_khau_hash, nv.trang_thai, vt.ten_vai_tro
-         FROM nhan_vien nv JOIN vai_tro vt ON vt.id = nv.vai_tro_id
-        WHERE nv.email = ? LIMIT 1`,
-      [email]
-    );
-    if (admins.length) {
-      const row = admins[0];
-      if (row.trang_thai !== 'hoat_dong') {
-        return res.status(403).json({ error: 'Tài khoản đã bị khóa.' });
+    let user = null;
+    let role = '';
+    let tableName = '';
+
+    // Ưu tiên 1: Tìm trong bảng Nhân viên (Admin) trước
+    const [admins] = await pool.query("SELECT * FROM nhan_vien WHERE email = ? LIMIT 1", [email]);
+    
+    if (admins.length > 0) {
+      user = admins[0];
+      role = user.vai_tro_id === 1 ? 'admin' : 'staff';
+      tableName = 'nhan_vien';
+    } else {
+      // Ưu tiên 2: Không thấy Admin thì tìm trong bảng Khách hàng
+      const [customers] = await pool.query("SELECT * FROM khach_hang WHERE email = ? LIMIT 1", [email]);
+      if (customers.length > 0) {
+        user = customers[0];
+        role = 'customer';
+        tableName = 'khach_hang';
       }
-      const ok = await comparePassword(password, row.mat_khau_hash);
-      if (!ok) return res.status(401).json({ error: 'Email hoặc mật khẩu không đúng.' });
-      const user = shapeAdmin(row);
-      const token = signToken({ id: user.id, loai: 'admin', role: 'admin', email: user.email, ho_ten: row.ho_ten });
-      return res.json({ token, user });
     }
 
-    // 2) Tài khoản KHÁCH HÀNG
-    const [customers] = await pool.query(
-      `SELECT id, ho_ten, email, so_dien_thoai, mat_khau_hash, trang_thai
-         FROM khach_hang WHERE email = ? LIMIT 1`,
-      [email]
+    // Nếu không tìm thấy ở cả 2 bảng
+    if (!user) {
+      return res.status(401).json({ status: 'error', message: 'Tài khoản không tồn tại!' });
+    }
+
+    // Kiểm tra mật khẩu (So sánh pass nhập vào với mã hash trong DB)
+    const isMatch = await bcrypt.compare(password, user.mat_khau_hash);
+    if (!isMatch) {
+      return res.status(401).json({ status: 'error', message: 'Mật khẩu không chính xác!' });
+    }
+
+    // Cập nhật thời gian đăng nhập lần cuối (Sử dụng lệnh NOW() của MySQL)
+    await pool.query(`UPDATE ${tableName} SET lan_dang_nhap_cuoi = NOW() WHERE id = ?`, [user.id]);
+
+    // Tạo mã Token (JWT) định danh người dùng
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.ho_ten, role: role },
+      JWT_SECRET,
+      { expiresIn: '1d' } // Token có hiệu lực trong 1 ngày
     );
-    if (!customers.length) {
-      return res.status(401).json({ error: 'Email hoặc mật khẩu không đúng.' });
-    }
-    const c = customers[0];
-    if (c.trang_thai === 'khoa') {
-      return res.status(403).json({ error: 'Tài khoản đã bị khóa.' });
-    }
-    const ok = await comparePassword(password, c.mat_khau_hash);
-    if (!ok) return res.status(401).json({ error: 'Email hoặc mật khẩu không đúng.' });
 
-    const user = shapeCustomer(c);
-    const token = signToken({ id: user.id, loai: 'customer', role: 'customer', email: user.email, ho_ten: c.ho_ten });
-    return res.json({ token, user });
-  } catch (err) {
-    console.error('POST /api/auth/login:', err);
-    return res.status(500).json({ error: 'Lỗi server khi đăng nhập. Vui lòng thử lại.' });
-  }
-});
+    // Trả kết quả về cho Frontend
+    return res.json({
+      status: 'success',
+      message: 'Đăng nhập thành công',
+      token: token,
+      user: { id: user.id, name: user.ho_ten, email: user.email, role: role }
+    });
 
-/* ---------- GET /api/auth/me ---------- */
-router.get('/me', requireAuth, async (req, res) => {
-  try {
-    if (req.user.loai === 'admin') {
-      const [rows] = await pool.query('SELECT id, ho_ten, email FROM nhan_vien WHERE id = ? LIMIT 1', [req.user.id]);
-      if (!rows.length) return res.status(404).json({ error: 'Không tìm thấy tài khoản.' });
-      return res.json({ user: shapeAdmin(rows[0]) });
-    }
-    const [rows] = await pool.query(
-      'SELECT id, ho_ten, email, so_dien_thoai FROM khach_hang WHERE id = ? LIMIT 1',
-      [req.user.id]
-    );
-    if (!rows.length) return res.status(404).json({ error: 'Không tìm thấy tài khoản.' });
-    return res.json({ user: shapeCustomer(rows[0]) });
-  } catch (err) {
-    console.error('GET /api/auth/me:', err);
-    return res.status(500).json({ error: 'Lỗi server.' });
+  } catch (error) {
+    console.error('Lỗi Đăng nhập:', error);
+    return res.status(500).json({ status: 'error', message: 'Lỗi máy chủ' });
   }
 });
 
