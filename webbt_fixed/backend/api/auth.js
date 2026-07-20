@@ -43,7 +43,7 @@ router.post('/register', async (req, res) => {
 
     // THÊM MỚI: Tạo mã Token (JWT) định danh người dùng từ ID vừa được insert
     const token = jwt.sign(
-      { id: result.insertId, email: email, name: hoTen, role: 'customer' },
+      { id: result.insertId, email: email, name: hoTen, role: 'customer' ,loai:'customer'},
       JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -111,7 +111,7 @@ router.post('/login', async (req, res) => {
 
     // Tạo mã Token (JWT) định danh người dùng
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.ho_ten, role: role },
+      { id: user.id, email: user.email, name: user.ho_ten, role: role ,loai: role},
       JWT_SECRET,
       { expiresIn: '1d' } // Token có hiệu lực trong 1 ngày
     );
