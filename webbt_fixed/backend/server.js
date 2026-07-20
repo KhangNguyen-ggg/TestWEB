@@ -65,7 +65,7 @@ Vai trò của bạn:
 
 /* ============ Middleware chung ============ */
 app.use(cors({
-  origin: 'https://vnpt-web.infinityfree.io',
+  origin: '*',
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
 }));
