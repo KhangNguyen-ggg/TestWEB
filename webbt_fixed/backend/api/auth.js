@@ -56,7 +56,7 @@ router.post('/register', async (req, res) => {
       user: { id: result.insertId, name: hoTen, email: email, role: 'customer' }
     });
 
-    
+
   } catch (error) {
     console.error('Lỗi Đăng ký:', error);
     return res.status(500).json({ status: 'error', message: 'Lỗi máy chủ' });
@@ -107,7 +107,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Cập nhật thời gian đăng nhập lần cuối (Sử dụng lệnh NOW() của MySQL)
-    await pool.query(`UPDATE ${tableName} SET lan_dang_nhap_cuoi = NOW() WHERE id = ?`, [user.id]);
+    //await pool.query(`UPDATE ${tableName} SET lan_dang_nhap_cuoi = NOW() WHERE id = ?`, [user.id]);
 
     // Tạo mã Token (JWT) định danh người dùng
     const token = jwt.sign(
