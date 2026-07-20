@@ -41,20 +41,7 @@ router.post('/register', async (req, res) => {
       [hoTen, email, phone || null, hashedPassword]
     );
 
-    // THÊM ĐOẠN NÀY: Tạo mã Token định danh ngay sau khi tạo user thành công
-    const token = jwt.sign(
-      { id: result.insertId, email: email, name: hoTen, role: 'customer' },
-      JWT_SECRET,
-      { expiresIn: '1d' } 
-    );
-
-    // SỬA LẠI KẾT QUẢ TRẢ VỀ: Bổ sung thêm token và user
-    return res.json({ 
-      status: 'success', 
-      message: 'Đăng ký tài khoản thành công!',
-      token: token,
-      user: { id: result.insertId, name: hoTen, email: email, role: 'customer' }
-    });
+    return res.json({ status: 'success', message: 'Đăng ký tài khoản thành công!' });
 
   } catch (error) {
     console.error('Lỗi Đăng ký:', error);
