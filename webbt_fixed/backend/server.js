@@ -143,22 +143,7 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-/* ============ Static + SPA fallback ============ */
-/* ============ Static + SPA fallback ============ */
-// Định vị chính xác thư mục frontend nằm cùng cấp với backend
-// const frontendPath = path.resolve(__dirname, '..', 'frontend');
-
-// app.use(express.static(frontendPath));
-
-// app.get('*', (req, res, next) => {
-//   if (req.path.startsWith('/api/')) return next();
-//   res.sendFile(path.join(frontendPath, 'index.php'), (err) => {
-//     if (err) {
-//       console.error("❌ Không tìm thấy file index.php tại:", path.join(frontendPath, 'index.php'));
-//       res.status(404).send("Cannot GET / (File index.php missing)");
-//     }
-//   });
-// });
+/* ============ Phục vụ website tĩnh (React build) ============ */
 
 app.listen(PORT, async () => {
   // Tự động nhận diện URL public khi chạy trên Render, nếu không có sẽ dùng localhost làm mặc định
