@@ -60,7 +60,7 @@
 
 <?php
 // URL API của backend trên Render
-$apiUrl = 'https://deploy-web-g27w.onrender.com/api/menus';
+$apiUrl = 'https://testweb-3dku.onrender.com/api/menus';
 
 // 1. Gọi API
 $response = @file_get_contents($apiUrl);

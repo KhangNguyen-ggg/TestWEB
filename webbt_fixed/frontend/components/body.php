@@ -179,7 +179,7 @@
 $featuredServices = [];
 try {
     // Gọi API Node.js trên Render thay vì query DB trực tiếp
-    $apiUrl = 'https://deploy-web-g27w.onrender.com/api/products?type=dich_vu_so&limit=3&featured=true';
+    $apiUrl = 'https://testweb-3dku.onrender.com/api/products?type=dich_vu_so&limit=3&featured=true';
     $response = @file_get_contents($apiUrl);
     if ($response !== false) {
         $resData = json_decode($response, true);
@@ -273,7 +273,7 @@ try {
 <?php
 $allServices = [];
 try {
-    $apiUrl = 'https://deploy-web-g27w.onrender.com/api/products?type=dich_vu_so';
+    $apiUrl = 'https://testweb-3dku.onrender.com/api/products?type=dich_vu_so';
     $response = @file_get_contents($apiUrl);
     if ($response !== false) {
         $resData = json_decode($response, true);
@@ -346,7 +346,7 @@ $uiMap = [
 // 1. Truy vấn các gói Combo từ API
 $allCombos = [];
 try {
-    $apiUrl = 'https://deploy-web-g27w.onrender.com/api/products?type=combo';
+    $apiUrl = 'https://testweb-3dku.onrender.com/api/products?type=combo';
     $response = @file_get_contents($apiUrl);
     if ($response !== false) {
         $resData = json_decode($response, true);
