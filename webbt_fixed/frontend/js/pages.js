@@ -366,7 +366,7 @@
 
     try {
       // Gọi API đến backend Render
-      const response = await fetch(`https://deploy-web-g27w.onrender.com/api/pages?slug=${key}`);
+      const response = await fetch(`https://testweb-3dku.onrender.com/api/pages?slug=${key}`);
       const responseData = await response.json();
 
       if (responseData.status === 'success') {

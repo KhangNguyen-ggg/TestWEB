@@ -11,7 +11,7 @@
   //(location.hostname === 'localhost' || location.hostname === '127.0.0.1')
   //  ? `${location.protocol}//${location.hostname}:${location.port || 3000}`
   //  : '';
-  const BASE = "https://deploy-web-g27w.onrender.com";
+  const BASE = "https://testweb-3dku.onrender.com";
 
   const TOKEN_KEY = 'vnvd_token';
   let _available = null;

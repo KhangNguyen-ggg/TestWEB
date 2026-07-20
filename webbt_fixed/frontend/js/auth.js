@@ -6,7 +6,7 @@
   'use strict';
 
   // API URL trên Render
-  const API_URL = 'https://deploy-web-g27w.onrender.com/api/auth';
+  const API_URL = 'https://testweb-3dku.onrender.com/api/auth';
 
   /* ---- DOM refs ---- */
   const loginModal      = document.getElementById('loginModal');
