@@ -130,4 +130,25 @@ router.post('/login', async (req, res) => {
   }
 });
 
+/* ========================================================
+ * 3. API KIỂM TRA PHIÊN ĐĂNG NHẬP (Dành cho F5 reload)
+ * ======================================================== */
+router.get('/me', (req, res) => {
+  // Nhờ middleware attachUser ở server.js, req.user đã được giải mã sẵn từ Token
+  if (!req.user) {
+    return res.status(401).json({ status: 'error', message: 'Token không hợp lệ hoặc đã hết hạn.' });
+  }
+
+  // Nếu token hợp lệ, trả về lại thông tin user cho Frontend
+  return res.json({
+    status: 'success',
+    user: {
+      id: req.user.id,
+      name: req.user.name || req.user.ho_ten,
+      email: req.user.email,
+      role: req.user.role
+    }
+  });
+});
+
 module.exports = router;
