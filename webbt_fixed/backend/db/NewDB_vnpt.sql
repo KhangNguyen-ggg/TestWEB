@@ -625,7 +625,7 @@ CREATE TABLE `yeu_cau_ho_tro` (
 -- ========================================================
 -- KHAI BÁO CÁC RÀNG BUỘC KHÓA NGOẠI (FOREIGN KEYS)
 -- ========================================================
-
+ach_hang
 ALTER TABLE `ap_dung_khuyen_mai`
   ADD CONSTRAINT `ap_dung_khuyen_mai_ibfk_1` FOREIGN KEY (`khuyen_mai_id`) REFERENCES `khuyen_mai` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `ap_dung_khuyen_mai_ibfk_2` FOREIGN KEY (`san_pham_id`) REFERENCES `san_pham` (`id`) ON DELETE CASCADE,
