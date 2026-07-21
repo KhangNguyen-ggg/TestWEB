@@ -228,6 +228,13 @@
         setToken(data.token);
         setCurrentUser(data.user);
         finish();
+
+        // Chuyển hướng nếu là admin hoặc superadmin
+        if (data.user.role === 'admin' || data.user.role === 'superadmin') {
+            window.location.href = 'admin_panel/index.php';
+            return; 
+        }
+
         updateAuthUI();
         closeAllModals();
         loginForm.reset();
