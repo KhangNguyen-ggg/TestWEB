@@ -138,6 +138,9 @@
       authBtns && (authBtns.style.display = 'flex');
       userMenu && (userMenu.style.display = 'none');
       document.body.classList.remove('is-admin');
+
+      const adminBtn = document.getElementById('openAdminBtn');
+      if (adminBtn) adminBtn.style.display = 'none';
     }
     document.dispatchEvent(new CustomEvent('vnvd:authchange'));
     if (window.lucide) lucide.createIcons();
@@ -230,11 +233,12 @@
         finish();
 
         // Chuyển hướng nếu là admin hoặc superadmin
-        if (data.user.role === 'admin' || data.user.role === 'superadmin') {
-            window.location.href = 'admin_panel/index.php';
-            return; 
-        }
+        // if (data.user.role === 'admin' || data.user.role === 'superadmin') {
+        //     window.location.href = '../admin_panel/index.php';
+        //     return;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+        // }
 
+        // Nếu là khách hàng bình thường thì cập nhật giao diện tại trang chủ
         updateAuthUI();
         closeAllModals();
         loginForm.reset();

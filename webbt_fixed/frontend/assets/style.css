@@ -1382,6 +1382,10 @@ body.page-open .testimonials,
 body.page-open .contact-cta,
 body.page-open .footer{ display:none !important; }
 
+/* Home-only sections: hidden by default, shown only on home */
+.home-only-section { display: none !important; }
+body.on-home .home-only-section { display: block !important; }
+
 .pg-hero{
   position:relative; overflow:hidden;
   background:var(--blue-800);

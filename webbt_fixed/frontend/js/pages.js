@@ -13,7 +13,6 @@
     /* ---------- VỀ CHÚNG TÔI ---------- */
     'gioi-thieu': {
       breadcrumb: ['Về chúng tôi', 'Giới thiệu'],
-
       body: `
         <div class="pg-section">
           <h2>Chúng tôi là ai?</h2>

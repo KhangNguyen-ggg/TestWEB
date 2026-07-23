@@ -80,9 +80,14 @@
   const adminUsers = () => req('GET', '/api/admin/users');
   const adminProducts = () => req('GET', '/api/admin/products');
   const adminOrders = () => req('GET', '/api/admin/orders');
+
   const adminCreateUser = (p) => req('POST', '/api/admin/users', p);
   const adminUpdateUser = (id, p) => req('PUT', `/api/admin/users/${id}`, p);
   const adminDeleteUser = (id) => req('DELETE', `/api/admin/users/${id}`);
+
+  const adminCreateProduct = (p) => req('POST', '/api/admin/products', p);
+  const adminUpdateProduct = (id, p) => req('PUT', `/api/admin/products/${id}`, p);
+  const adminDeleteProduct = (id) => req('DELETE', `/api/admin/products/${id}`);
 
   // Chat
   const sendChat = (message, history) => req('POST', '/api/chat', { message, history: history || [] });
@@ -97,6 +102,7 @@
       checkout, getOrders, getOrder,
       adminStats, adminUsers, adminProducts, adminOrders,
       adminCreateUser, adminUpdateUser, adminDeleteUser,
+      adminCreateProduct, adminUpdateProduct, adminDeleteProduct,
       sendChat,
     },
     writable: false,

@@ -82,9 +82,34 @@
 
       // Services
       if (servicesBody) {
-        servicesBody.innerHTML = products.map(s =>
-          `<tr><td>${esc(s.id)}</td><td>${esc(s.name)}</td><td>${fmt(s.price)}</td><td><span class="admin-tag green">Đang bán</span></td></tr>`
-        ).join('');
+        servicesBody.innerHTML = products.map(s => {
+          const stTag = s.status === 'dang_ban' ? '<span class="admin-tag green">Đang bán</span>' : '<span class="admin-tag orange">Ngừng/Sắp ra mắt</span>';
+          return `<tr>
+            <td>${esc(s.id)}</td>
+            <td>${esc(s.name)}</td>
+            <td>${fmt(s.listPrice || s.price)}</td>
+            <td>${stTag}</td>
+            <td>
+               <button class="btn-action edit-sp" data-dbid="${s.dbId}" style="cursor:pointer; color: #0066CC; background: none; border: none;"><i data-lucide="pen"></i> Sửa</button>
+               <button class="btn-action del-sp" data-dbid="${s.dbId}" style="cursor:pointer; color: #E53E3E; background: none; border: none;"><i data-lucide="trash"></i> Xóa</button>
+            </td>
+          </tr>`;
+        }).join('');
+
+        // GẮN SỰ KIỆN NÚT XÓA TRỰC TIẾP
+        document.querySelectorAll('.del-sp').forEach(btn => {
+           btn.addEventListener('click', async () => {
+              if(!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
+              try {
+                 await Api.adminDeleteProduct(btn.dataset.dbid);
+                 alert('Đã xóa thành công!');
+                 renderOnline(); // Render lại bảng
+              } catch(e) { alert(e.message); }
+           });
+        });
+
+        // GẮN SỰ KIỆN NÚT SỬA (Hiện form lấy thông tin)
+        // ... (Bạn có thể tự tạo Modal bằng thẻ <div> như bên auth_3.js rồi dùng JS để gán data-dbid vào form)
       }
 
       // Orders
