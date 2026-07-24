@@ -174,7 +174,7 @@ router.post('/google', async (req, res) => {
 
     // 2. Kiểm tra xem email này đã tồn tại trong Database chưa
     // (Đổi 'khach_hang' thành tên bảng lưu user của bạn)
-    const [users] = await db.query('SELECT * FROM khach_hang WHERE email = ?', [email]);
+    const [users] = await pool.query('SELECT * FROM khach_hang WHERE email = ?', [email]);
     let user = users[0];
 
     if (!user) {
@@ -183,7 +183,7 @@ router.post('/google', async (req, res) => {
         INSERT INTO khach_hang (ho_ten, email, mat_khau, trang_thai)
         VALUES (?, ?, 'GOOGLE_LOGIN', 'hoat_dong')
       `;
-      const [result] = await db.query(insertQuery, [fullName, email]);
+      const [result] = await pool.query(insertQuery, [fullName, email]);
       
       // Gán data để trả về cho Frontend
       user = {
