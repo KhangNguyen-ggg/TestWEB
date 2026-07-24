@@ -362,23 +362,65 @@
     setTimeout(() => openModal(loginModal), 150);
   });
 
-  /* ---- Social login (demo) ---- */
+/* ---- Khởi tạo Facebook SDK ---- */
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : 'NHẬP_FACEBOOK_APP_ID_CỦA_BẠN', // Thay ID của bạn vào
+      cookie     : true,
+      xfbml      : true,
+      version    : 'v18.0'
+    });
+  };
+
+  /* ---- Xử lý đăng nhập Google ---- */
   document.getElementById('loginGoogle')?.addEventListener('click', () => {
-    showToast('Chức năng đăng nhập Google đang được bảo trì.', true);
-  });
-  document.getElementById('loginFacebook')?.addEventListener('click', () => {
-    showToast('Chức năng đăng nhập Facebook đang được bảo trì.', true);
+    // Khởi tạo client Google
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: 'NHẬP_GOOGLE_CLIENT_ID_CỦA_BẠN', // Thay ID của bạn vào
+      scope: 'email profile',
+      callback: async (response) => {
+        if (response.error) return;
+        
+        showToast('Đang xác thực với hệ thống...', false);
+        try {
+          // Gửi token lấy được từ Google lên Backend Node.js của bạn
+          const { token, user } = await Api.loginGoogle(response.access_token);
+          
+          // Lưu token và thông tin người dùng giống hệt luồng đăng nhập thường
+          Api.setToken(token);
+          setCurrentUser(user);
+          updateAuthUI();
+          closeAllModals();
+          showToast(`Chào mừng ${user.firstName} đã đăng nhập bằng Google! 🎉`);
+        } catch (err) {
+          showToast(err.message || 'Lỗi xác thực Google', true);
+        }
+      },
+    });
+    client.requestAccessToken();
   });
 
-  /* ---- Forgot password (demo) ---- */
-  document.getElementById('forgotLink')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail')?.value.trim();
-    if (!email) {
-      setFieldError('loginEmail','loginEmailErr','Nhập email để khôi phục mật khẩu');
-      return;
-    }
-    showToast(`Đã gửi link khôi phục đến ${email} 📧`);
+  /* ---- Xử lý đăng nhập Facebook ---- */
+  document.getElementById('loginFacebook')?.addEventListener('click', () => {
+    FB.login(async function(response) {
+      if (response.authResponse) {
+        showToast('Đang xác thực với hệ thống...', false);
+        try {
+          // Gửi token lấy được từ FB lên Backend Node.js
+          const { token, user } = await Api.loginFacebook(response.authResponse.accessToken);
+          
+          Api.setToken(token);
+          setCurrentUser(user);
+          updateAuthUI();
+          closeAllModals();
+          showToast(`Chào mừng ${user.firstName} đã đăng nhập bằng Facebook! 🎉`);
+        } catch (err) {
+          showToast(err.message || 'Lỗi xác thực Facebook', true);
+        }
+      } else {
+        showToast('Người dùng đã hủy đăng nhập Facebook', true);
+      }
+    }, {scope: 'public_profile,email'});
   });
 
   /* ---- Keyboard: Escape closes modals ---- */

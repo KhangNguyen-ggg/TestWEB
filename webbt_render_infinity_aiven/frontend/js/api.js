@@ -92,6 +92,7 @@
   // Chat
   const sendChat = (message, history) => req('POST', '/api/chat', { message, history: history || [] });
 
+
   Object.defineProperty(window, 'VNVDApi', {
     value: {
       get available() { return _available; },
@@ -103,11 +104,12 @@
       adminStats, adminUsers, adminProducts, adminOrders,
       adminCreateUser, adminUpdateUser, adminDeleteUser,
       adminCreateProduct, adminUpdateProduct, adminDeleteProduct,
-      sendChat,
+      sendChat, loginGoogle(accessToken) { return request('POST', '/api/auth/google', { token: accessToken }); },
+      loginFacebook(accessToken) { return request('POST', '/api/auth/facebook', { token: accessToken }); },
     },
     writable: false,
     configurable: false,
   });
 
-  detect().catch(() => {});
+  detect().catch(() => { });
 })();
