@@ -108,9 +108,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ status: 'error', message: 'Mật khẩu không chính xác!' });
     }
 
-    // Cập nhật thời gian đăng nhập lần cuối (Sử dụng lệnh NOW() của MySQL)
-    //await pool.query(`UPDATE ${tableName} SET lan_dang_nhap_cuoi = NOW() WHERE id = ?`, [user.id]);
-
     // Tạo mã Token (JWT) định danh người dùng
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.ho_ten, role: role ,loai: role},
@@ -136,12 +133,10 @@ router.post('/login', async (req, res) => {
  * 3. API KIỂM TRA PHIÊN ĐĂNG NHẬP (Dành cho F5 reload)
  * ======================================================== */
 router.get('/me', (req, res) => {
-  // Nhờ middleware attachUser ở server.js, req.user đã được giải mã sẵn từ Token
   if (!req.user) {
     return res.status(401).json({ status: 'error', message: 'Token không hợp lệ hoặc đã hết hạn.' });
   }
 
-  // Nếu token hợp lệ, trả về lại thông tin user cho Frontend
   return res.json({
     status: 'success',
     user: {
@@ -188,7 +183,6 @@ router.post('/google', async (req, res) => {
       };
 
       // ---- BẮT ĐẦU ĐOẠN CODE GỬI EMAIL CHÀO MỪNG ----
-      // Cấu hình mới tối ưu cho máy chủ ảo (Render, Heroku,...)
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
@@ -196,16 +190,17 @@ router.post('/google', async (req, res) => {
         requireTLS: true,
         auth: {
           user: '2006nguyenhoanggiakhang@gmail.com',
-          pass: 'egejfzcxnvkhsxnv'
+          pass: 'egejfzcxnvkhsxnv' // Đã viết liền không khoảng trắng
         },
         tls: {
           rejectUnauthorized: false
         },
         family: 4
       });
+
       const mailOptions = {
         from: '"Hệ thống VNVD" <2006nguyenhoanggiakhang@gmail.com>',
-        to: email, // Gửi đến email mà khách hàng vừa dùng để đăng nhập
+        to: email, 
         subject: '🎉 Chào mừng bạn đến với VNVD!',
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -219,24 +214,13 @@ router.post('/google', async (req, res) => {
         `
       };
 
-      // Gửi thư chạy ngầm (không dùng await để tránh làm khách hàng phải chờ load lâu)
+      // Thông báo log trước khi gọi lệnh gửi mail
+      console.log(`[Hệ thống] Đang tiến hành gửi email chào mừng tới địa chỉ: ${email}...`);
+
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) console.error('Lỗi gửi email chào mừng:', error);
         else console.log('Đã gửi email chào mừng thành công tới:', email);
       });
-
-      // try {
-      //   const info = await transporter.sendMail(mailOptions);
-
-      //   console.log(
-      //     'Đã gửi email chào mừng thành công:',
-      //     info.messageId,
-      //     '→',
-      //     email
-      //   );
-      // } catch (error) {
-      //   console.error('Lỗi gửi email chào mừng:', error);
-      // }   
       // ---- KẾT THÚC ĐOẠN CODE GỬI EMAIL ----
 
     } else {
@@ -245,7 +229,7 @@ router.post('/google', async (req, res) => {
 
     const jwtToken = jwt.sign(
       { id: user.id, email: user.email, name: user.name || user.ho_ten, role: user.role, loai: user.role },
-      JWT_SECRET, // Nên dùng chung biến JWT_SECRET đã khai báo ở đầu file
+      JWT_SECRET,
       { expiresIn: '1d' }
     );
 
@@ -256,4 +240,5 @@ router.post('/google', async (req, res) => {
     res.status(500).json({ error: 'Xác thực thất bại.' });
   }
 });
+
 module.exports = router;
