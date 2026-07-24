@@ -194,20 +194,20 @@ router.post('/google', async (req, res) => {
       };
 
       // ---- BẮT ĐẦU ĐOẠN CODE GỬI EMAIL CHÀO MỪNG ----
-      // Thay thế khối transporter cũ bằng khối này
+      // Cấu hình mới tối ưu cho máy chủ ảo (Render, Heroku,...)
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
-        port: 465,
-        secure: true, 
+        port: 587,             // Đổi từ 465 sang 587
+        secure: false,         // Bắt buộc là false khi dùng cổng 587
+        requireTLS: true,      // Kích hoạt chuẩn STARTTLS
         auth: {
-          user: '2006nguyenhoanggiakhang@gmail.com', // ⚠️ Thay email của bạn
-          pass: 'egejfzcxnvkhsxnv'     // ⚠️ Thay mã 16 chữ cái
+          user: '2006nguyenhoanggiakhang@gmail.com', 
+          pass: 'egejfzcxnvkhsxnv'     
         },
         tls: {
           rejectUnauthorized: false 
         },
-        // 👇 THÊM DÒNG NÀY ĐỂ GIẢI QUYẾT MỌI VẤN ĐỀ VỀ MẠNG
-        family: 4 // Bắt buộc ưu tiên dùng IPv4 (bỏ qua IPv6)
+        family: 4 // Vẫn giữ nguyên để bắt buộc dùng IPv4
       });
       const mailOptions = {
         from: '"Hệ thống VNVD" <2006nguyenhoanggiakhang@gmail.com>',
@@ -226,20 +226,12 @@ router.post('/google', async (req, res) => {
       };
 
       // Gửi thư chạy ngầm (không dùng await để tránh làm khách hàng phải chờ load lâu)
-      // Cấu hình mới tối ưu cho máy chủ ảo (Render, Heroku,...)
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,             // Đổi từ 465 sang 587
-        secure: false,         // Bắt buộc là false khi dùng cổng 587
-        requireTLS: true,      // Kích hoạt chuẩn STARTTLS
-        auth: {
-          user: '2006nguyenhoanggiakhang@gmail.com', 
-          pass: 'egejfzcxnvkhsxnv'     
-        },
-        tls: {
-          rejectUnauthorized: false 
-        },
-        family: 4 // Vẫn giữ nguyên để bắt buộc dùng IPv4
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) 
+          {
+            console.error('Lỗi gửi email chào mừng:', error);
+          }
+        else console.log('Đã gửi email chào mừng thành công tới:', email);
       });
       // ---- KẾT THÚC ĐOẠN CODE GỬI EMAIL ----
 
