@@ -245,8 +245,8 @@ router.post('/google', async (req, res) => {
     }
 
     const jwtToken = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'YOUR_SECRET_KEY',
+      { id: user.id, email: user.email, name: user.name || user.ho_ten, role: user.role, loai: user.role },
+      JWT_SECRET, // Nên dùng chung biến JWT_SECRET đã khai báo ở đầu file
       { expiresIn: '1d' }
     );
 
