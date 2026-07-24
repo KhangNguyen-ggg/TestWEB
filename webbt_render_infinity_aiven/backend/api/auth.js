@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const axios = require('axios'); 
+const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db/db');
 
@@ -160,30 +161,25 @@ router.get('/me', (req, res) => {
 // const jwt = require('jsonwebtoken');
 // const pool = require('../db/database'); // Thay bằng biến kết nối DB của bạn
 
+// Thêm thư viện này ở đầu file cùng với các require khác
+
 router.post('/google', async (req, res) => {
   const { token } = req.body;
 
-  if (!token) {
-    return res.status(400).json({ error: 'Không tìm thấy token xác thực.' });
-  }
+  if (!token) return res.status(400).json({ error: 'Không tìm thấy token xác thực.' });
 
   try {
-    // 1. Gọi API của Google để lấy thông tin user
     const googleResponse = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
     const userInfo = googleResponse.data;
 
     const email = userInfo.email;
-    const firstName = userInfo.given_name || '';
-    const lastName = userInfo.family_name || '';
-    const fullName = `${firstName} ${lastName}`.trim();
+    const fullName = `${userInfo.given_name || ''} ${userInfo.family_name || ''}`.trim();
 
-    // 2. Kiểm tra xem Email đã có trong bảng khach_hang chưa
-    // LƯU Ý: Đổi chữ 'pool' thành 'db' hoặc tên biến kết nối cơ sở dữ liệu của bạn
     const [users] = await pool.query('SELECT * FROM khach_hang WHERE email = ?', [email]);
     let user = users[0];
 
+    // NẾU TÀI KHOẢN CHƯA TỒN TẠI (TẠO MỚI)
     if (!user) {
-      // 3. NẾU CHƯA CÓ: Tạo tài khoản mới, truyền thẳng chữ NULL vào chỗ mật khẩu
       const insertQuery = `
         INSERT INTO khach_hang (ho_ten, email, mat_khau_hash, trang_thai, da_xac_thuc_email)
         VALUES (?, ?, NULL, 'hoat_dong', 1)
@@ -192,40 +188,58 @@ router.post('/google', async (req, res) => {
       
       user = {
         id: result.insertId,
-        firstName: firstName,
-        lastName: lastName,
         name: fullName,
         email: email,
         role: 'customer'
       };
-    } else {
-      // 4. NẾU ĐÃ CÓ: Chỉ lấy thông tin ra dùng
-      user = {
-        id: user.id,
-        name: user.ho_ten,
-        email: user.email,
-        role: user.vai_tro || 'customer' 
+
+      // ---- BẮT ĐẦU ĐOẠN CODE GỬI EMAIL CHÀO MỪNG ----
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: '2006nguyenhoanggiakhang@gmail.com', // ⚠️ Thay bằng Gmail của bạn
+          pass: 'egej fzcx nvkh sxnv'     // ⚠️ Thay bằng chuỗi 16 ký tự vừa lấy ở Bước 2
+        }
+      });
+
+      const mailOptions = {
+        from: '"Hệ thống VNVD" <email_cua_ban@gmail.com>',
+        to: email, // Gửi đến email mà khách hàng vừa dùng để đăng nhập
+        subject: '🎉 Chào mừng bạn đến với VNVD!',
+        html: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <h2 style="color: #0056b3;">Xin chào ${fullName},</h2>
+            <p>Cảm ơn bạn đã tin tưởng và tạo tài khoản tại <strong>VNVD</strong> bằng Google.</p>
+            <p>Tài khoản của bạn đã được kích hoạt thành công. Ngay bây giờ, bạn có thể trải nghiệm toàn bộ các dịch vụ và tính năng trên hệ thống của chúng tôi.</p>
+            <br>
+            <p>Nếu cần hỗ trợ, đừng ngần ngại liên hệ lại với chúng tôi nhé!</p>
+            <p>Trân trọng,<br><strong>Đội ngũ VNVD</strong></p>
+          </div>
+        `
       };
+
+      // Gửi thư chạy ngầm (không dùng await để tránh làm khách hàng phải chờ load lâu)
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) console.error('Lỗi gửi email chào mừng:', error);
+        else console.log('Đã gửi email chào mừng thành công tới:', email);
+      });
+      // ---- KẾT THÚC ĐOẠN CODE GỬI EMAIL ----
+
+    } else {
+      user = { id: user.id, name: user.ho_ten, email: user.email, role: user.vai_tro || 'customer' };
     }
 
-    // 5. Tạo JWT Token của hệ thống (Nhớ dùng chung SECRET_KEY với đăng nhập thường)
     const jwtToken = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'YOUR_SECRET_KEY',
       { expiresIn: '1d' }
     );
 
-    // 6. Trả kết quả về cho Frontend
-    res.status(200).json({
-      message: 'Đăng nhập Google thành công',
-      token: jwtToken,
-      user: user
-    });
+    res.status(200).json({ message: 'Đăng nhập Google thành công', token: jwtToken, user });
 
   } catch (error) {
-    // Bắt và in lỗi Database ra console để dễ debug
     console.error('Lỗi đăng nhập Google:', error.message);
-    res.status(500).json({ error: 'Xác thực Google thất bại. Token có thể đã hết hạn hoặc lỗi Server.' });
+    res.status(500).json({ error: 'Xác thực thất bại.' });
   }
 });
 module.exports = router;
