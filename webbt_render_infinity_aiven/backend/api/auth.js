@@ -188,7 +188,7 @@ router.post('/google', async (req, res) => {
       };
 
       // ---- BẮT ĐẦU ĐOẠN CODE GỬI EMAIL CHÀO MỪNG ----
-      // Cấu hình mới tối ưu cho máy chủ ảo (Render, Heroku,...)aaa
+      // Cấu hình mới tối ưu cho máy chủ ảo (Render, Heroku,...)
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
@@ -196,7 +196,7 @@ router.post('/google', async (req, res) => {
         requireTLS: true,
         auth: {
           user: '2006nguyenhoanggiakhang@gmail.com',
-          pass: 'egej fzcx nvkh sxnv'
+          pass: 'egejfzcxnvkhsxnv'
         },
         tls: {
           rejectUnauthorized: false
