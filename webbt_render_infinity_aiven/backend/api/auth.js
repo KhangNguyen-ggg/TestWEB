@@ -191,19 +191,18 @@ router.post('/google', async (req, res) => {
       // Cấu hình mới tối ưu cho máy chủ ảo (Render, Heroku,...)
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
-        port: 587,             // Đổi từ 465 sang 587
-        secure: false,         // Bắt buộc là false khi dùng cổng 587
-        requireTLS: true,      // Kích hoạt chuẩn STARTTLS
+        port: 587,
+        secure: false,
+        requireTLS: true,
         auth: {
-          user: '2006nguyenhoanggiakhang@gmail.com', 
-          pass: 'egejfzcxnvkhsxnv'     
+          user: '2006nguyenhoanggiakhang@gmail.com',
+          pass: 'egej fzcx nvkh sxnv'
         },
         tls: {
-          rejectUnauthorized: false 
+          rejectUnauthorized: false
         },
-        family: 4 // Vẫn giữ nguyên để bắt buộc dùng IPv4
+        family: 4
       });
-
       const mailOptions = {
         from: '"Hệ thống VNVD" <2006nguyenhoanggiakhang@gmail.com>',
         to: email, // Gửi đến email mà khách hàng vừa dùng để đăng nhập
