@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const axios = require('axios'); 
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db/db');
 
@@ -150,12 +151,8 @@ router.get('/me', (req, res) => {
     }
   });
 });
-const express = require('express');
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
-// const db = require('../db'); // Import file kết nối database MySQL của bạn
 
-const router = express.Router();
+
 
 router.post('/google', async (req, res) => {
   const { token } = req.body; // Access Token từ Frontend gửi lên
