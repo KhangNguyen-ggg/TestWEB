@@ -198,7 +198,7 @@ router.post('/google', async (req, res) => {
         service: 'gmail',
         auth: {
           user: '2006nguyenhoanggiakhang@gmail.com', // ⚠️ Thay bằng Gmail của bạn
-          pass: 'egejfzcxnvkhsxnv'     // ⚠️ Thay bằng chuỗi 16 ký tự vừa lấy ở Bước 2
+          pass: 'egej fzcx nvkh sxnv'     // ⚠️ Thay bằng chuỗi 16 ký tự vừa lấy ở Bước 2
         }
       });
 
@@ -220,7 +220,11 @@ router.post('/google', async (req, res) => {
 
       // Gửi thư chạy ngầm (không dùng await để tránh làm khách hàng phải chờ load lâu)
       transporter.sendMail(mailOptions, (error, info) => {
-        if (error) console.error('Lỗi gửi email chào mừng:', error);
+        if (error) 
+          {
+            console.error('Lỗi gửi email chào mừng:', error);
+            console.log('Lỗi gửi email chào mừng:', error);
+          }
         else console.log('Đã gửi email chào mừng thành công tới:', email);
       });
       // ---- KẾT THÚC ĐOẠN CODE GỬI EMAIL ----
