@@ -220,23 +220,23 @@ router.post('/google', async (req, res) => {
       };
 
       // Gửi thư chạy ngầm (không dùng await để tránh làm khách hàng phải chờ load lâu)
-      // transporter.sendMail(mailOptions, (error, info) => {
-      //   if (error) console.error('Lỗi gửi email chào mừng:', error);
-      //   else console.log('Đã gửi email chào mừng thành công tới:', email);
-      // });
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) console.error('Lỗi gửi email chào mừng:', error);
+        else console.log('Đã gửi email chào mừng thành công tới:', email);
+      });
 
-      try {
-        const info = await transporter.sendMail(mailOptions);
+      // try {
+      //   const info = await transporter.sendMail(mailOptions);
 
-        console.log(
-          'Đã gửi email chào mừng thành công:',
-          info.messageId,
-          '→',
-          email
-        );
-      } catch (error) {
-        console.error('Lỗi gửi email chào mừng:', error);
-      }   
+      //   console.log(
+      //     'Đã gửi email chào mừng thành công:',
+      //     info.messageId,
+      //     '→',
+      //     email
+      //   );
+      // } catch (error) {
+      //   console.error('Lỗi gửi email chào mừng:', error);
+      // }   
       // ---- KẾT THÚC ĐOẠN CODE GỬI EMAIL ----
 
     } else {
