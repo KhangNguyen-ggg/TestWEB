@@ -152,67 +152,70 @@ router.get('/me', (req, res) => {
   });
 });
 
-
+/* ========================================================
+ * 4. ĐĂNG NHẬP BẰNG GOOGLE (OAuth2)
+ * ======================================================== */
+// Nhớ import các thư viện ở đầu file (nếu chưa có)
+// const axios = require('axios');
+// const jwt = require('jsonwebtoken');
+// const pool = require('../db/database'); // Thay bằng biến kết nối DB của bạn
 
 router.post('/google', async (req, res) => {
-  const { token } = req.body; // Access Token từ Frontend gửi lên
+  const { token } = req.body;
 
   if (!token) {
-    return res.status(400).json({ message: 'Không tìm thấy token xác thực.' });
+    return res.status(400).json({ error: 'Không tìm thấy token xác thực.' });
   }
 
   try {
-    // 1. Gọi API của Google để lấy thông tin user từ token
+    // 1. Gọi API của Google để lấy thông tin user
     const googleResponse = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
     const userInfo = googleResponse.data;
 
-    // userInfo trả về sẽ có: email, given_name (Tên), family_name (Họ)...
     const email = userInfo.email;
     const firstName = userInfo.given_name || '';
     const lastName = userInfo.family_name || '';
     const fullName = `${firstName} ${lastName}`.trim();
 
-    // 2. Kiểm tra xem email này đã tồn tại trong Database chưa
-    // (Đổi 'khach_hang' thành tên bảng lưu user của bạn)
+    // 2. Kiểm tra xem Email đã có trong bảng khach_hang chưa
+    // LƯU Ý: Đổi chữ 'pool' thành 'db' hoặc tên biến kết nối cơ sở dữ liệu của bạn
     const [users] = await pool.query('SELECT * FROM khach_hang WHERE email = ?', [email]);
     let user = users[0];
 
     if (!user) {
-      // 3. Nếu chưa có, TẠO MỚI tài khoản khách hàng
+      // 3. NẾU CHƯA CÓ: Tạo tài khoản mới, truyền thẳng chữ NULL vào chỗ mật khẩu
       const insertQuery = `
-        INSERT INTO khach_hang (ho_ten, email, mat_khau, trang_thai)
-        VALUES (?, ?, 'GOOGLE_LOGIN', 'hoat_dong')
+        INSERT INTO khach_hang (ho_ten, email, mat_khau_hash, trang_thai, da_xac_thuc_email)
+        VALUES (?, ?, NULL, 'hoat_dong', 1)
       `;
       const [result] = await pool.query(insertQuery, [fullName, email]);
       
-      // Gán data để trả về cho Frontend
       user = {
         id: result.insertId,
         firstName: firstName,
         lastName: lastName,
         name: fullName,
         email: email,
-        role: 'customer' // Đăng nhập Google mặc định là khách hàng
+        role: 'customer'
       };
     } else {
-      // Nếu đã có tài khoản, chuẩn hóa data để trả về
+      // 4. NẾU ĐÃ CÓ: Chỉ lấy thông tin ra dùng
       user = {
         id: user.id,
-        name: user.ho_ten || fullName,
+        name: user.ho_ten,
         email: user.email,
         role: user.vai_tro || 'customer' 
       };
     }
 
-    // 4. Tạo JWT Token của hệ thống VNVD
-    // Chú ý: Dùng đúng SECRET_KEY mà dự án của bạn đang dùng cho chức năng login thường
+    // 5. Tạo JWT Token của hệ thống (Nhớ dùng chung SECRET_KEY với đăng nhập thường)
     const jwtToken = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'SECRET_CUA_BAN',
+      process.env.JWT_SECRET || 'YOUR_SECRET_KEY',
       { expiresIn: '1d' }
     );
 
-    // 5. Trả kết quả thành công về cho Frontend
+    // 6. Trả kết quả về cho Frontend
     res.status(200).json({
       message: 'Đăng nhập Google thành công',
       token: jwtToken,
@@ -220,9 +223,9 @@ router.post('/google', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Lỗi đăng nhập Google:', error.response?.data || error.message);
-    res.status(500).json({ message: 'Xác thực Google thất bại. Token có thể đã hết hạn.' });
+    // Bắt và in lỗi Database ra console để dễ debug
+    console.error('Lỗi đăng nhập Google:', error.message);
+    res.status(500).json({ error: 'Xác thực Google thất bại. Token có thể đã hết hạn hoặc lỗi Server.' });
   }
 });
-
 module.exports = router;
