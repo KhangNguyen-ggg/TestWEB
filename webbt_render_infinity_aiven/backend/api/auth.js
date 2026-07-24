@@ -230,7 +230,6 @@ router.post('/google', async (req, res) => {
         if (error) 
           {
             console.error('Lỗi gửi email chào mừng:', error);
-            console.log('Lỗi gửi email chào mừng:', error);
           }
         else console.log('Đã gửi email chào mừng thành công tới:', email);
       });
