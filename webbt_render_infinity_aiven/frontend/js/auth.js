@@ -378,7 +378,7 @@
     const client = google.accounts.oauth2.initTokenClient({
       client_id: '653013164885-0q59b5044gn602dgjt4rl1btjor3c4ga.apps.googleusercontent.com', // Thay ID của bạn vào
       scope: 'email profile',
-      prompt: 'consent',// hiển thị cấp quiền mỗi lần đăng nhập
+      //prompt: 'consent',// hiển thị cấp quiền mỗi lần đăng nhập
       callback: async (response) => {
         if (response.error) return;
         
