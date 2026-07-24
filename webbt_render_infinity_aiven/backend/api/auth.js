@@ -198,7 +198,7 @@ router.post('/google', async (req, res) => {
         service: 'gmail',
         auth: {
           user: '2006nguyenhoanggiakhang@gmail.com', // ⚠️ Thay bằng Gmail của bạn
-          pass: 'egej fzcx nvkh sxnv'     // ⚠️ Thay bằng chuỗi 16 ký tự vừa lấy ở Bước 2
+          pass: 'egejfzcxnvkhsxnv'     // ⚠️ Thay bằng chuỗi 16 ký tự vừa lấy ở Bước 2
         }
       });
 
