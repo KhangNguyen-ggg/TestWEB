@@ -1,462 +1,240 @@
-/**
- * VNVD — Auth Module (kết nối trực tiếp Render API)
- * Handles: Login, Register, Logout, User menu, Password strength, Form validation
- */
-(function () {
-  'use strict';
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
+const axios = require('axios'); 
+const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
+const { pool } = require('../db/db'); // Đảm bảo đường dẫn này đúng với dự án của bạn
 
-  // API URL trên Render
-  const API_URL = 'https://testweb-3dku.onrender.com/api/auth';
+// Khóa bí mật để tạo Token
+const JWT_SECRET = process.env.JWT_SECRET || 'vnvd_super_secret_key_2026';
 
-  /* ---- DOM refs ---- */
-  const loginModal      = document.getElementById('loginModal');
-  const registerModal   = document.getElementById('registerModal');
-  const modalOverlay    = document.getElementById('modalOverlay');
-  const openLoginBtn    = document.getElementById('openLogin');
-  const openRegisterBtn = document.getElementById('openRegister');
-  const closeLoginBtn   = document.getElementById('closeLogin');
-  const closeRegisterBtn= document.getElementById('closeRegister');
-  const switchToReg     = document.getElementById('switchToRegister');
-  const switchToLog     = document.getElementById('switchToLogin');
-  const authBtns        = document.getElementById('authBtns');
-  const userMenu        = document.getElementById('userMenu');
-  const userAvatarBtn   = document.getElementById('userAvatarBtn');
-  const userDropdown    = document.getElementById('userDropdown');
-  const userAvatarCircle= document.getElementById('userAvatarCircle');
-  const userDisplayName = document.getElementById('userDisplayName');
-  const userDropdownName= document.getElementById('userDropdownName');
-  const userDropdownEmail=document.getElementById('userDropdownEmail');
-  const logoutBtn       = document.getElementById('logoutBtn');
-  const loginForm       = document.getElementById('loginForm');
-  const registerForm    = document.getElementById('registerForm');
-  const loginError      = document.getElementById('loginError');
-  const registerError   = document.getElementById('registerError');
-  const pwStrengthFill  = document.getElementById('pwStrengthFill');
-  const pwStrengthLabel = document.getElementById('pwStrengthLabel');
-  const regPassword     = document.getElementById('regPassword');
+/* ========================================================
+ * 1. API ĐĂNG KÝ TÀI KHOẢN (Chỉ dành cho khách hàng)
+ * ======================================================== */
+router.post('/register', async (req, res) => {
+  try {
+    const { firstName, lastName, email, phone, password } = req.body;
 
-  /* ---- Helpers ---- */
-  function showToast(msg, isError) {
-    const toast = document.getElementById('toast');
-    const toastMsg = document.getElementById('toastMsg');
-    if (!toast || !toastMsg) return;
-    toastMsg.textContent = msg;
-    toast.style.background = isError ? '#E53E3E' : '';
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-  }
-
-  function setFieldError(inputId, errId, msg) {
-    const input = document.getElementById(inputId);
-    const err   = document.getElementById(errId);
-    if (input) input.classList.toggle('error', !!msg);
-    if (err)   err.textContent = msg || '';
-  }
-
-  function clearErrors(...errIds) {
-    errIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = '';
-    });
-    document.querySelectorAll('.auth-input-wrap input.error').forEach(el => el.classList.remove('error'));
-  }
-
-  /* ---- LocalStorage User State ---- */
-  function getCurrentUser() {
-    try { return JSON.parse(localStorage.getItem('vnvd_user') || 'null'); }
-    catch { return null; }
-  }
-  function setCurrentUser(user) {
-    if (user) localStorage.setItem('vnvd_user', JSON.stringify(user));
-    else localStorage.removeItem('vnvd_user');
-  }
-  function getToken() {
-    return localStorage.getItem('vnvd_token') || '';
-  }
-  function setToken(token) {
-    if (token) localStorage.setItem('vnvd_token', token);
-    else localStorage.removeItem('vnvd_token');
-  }
-
-  /* ---- Role helpers (exposed for admin.js) ---- */
-  function isAdmin() {
-    const u = getCurrentUser();
-    return !!(u && u.role === 'admin');
-  }
-  window.VNVDAuth = { getCurrentUser, isAdmin, getToken };
-
-  /* ---- Modal open/close ---- */
-  function openModal(modal) {
-    modal?.classList.add('open');
-    modalOverlay?.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeModal(modal) {
-    modal?.classList.remove('open');
-    const anyOpen = document.querySelector('.auth-modal.open');
-    if (!anyOpen) {
-      modalOverlay?.classList.remove('active');
-      document.body.style.overflow = '';
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ status: 'error', message: 'Vui lòng nhập đủ thông tin bắt buộc' });
     }
+
+    const hoTen = `${firstName.trim()} ${lastName.trim()}`;
+
+    const [existing] = await pool.query(
+      "SELECT id FROM khach_hang WHERE email = ? OR so_dien_thoai = ?",
+      [email, phone || null]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ status: 'error', message: 'Email hoặc Số điện thoại đã được sử dụng!' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const [result] = await pool.query(
+      "INSERT INTO khach_hang (ho_ten, email, so_dien_thoai, mat_khau_hash) VALUES (?, ?, ?, ?)",
+      [hoTen, email, phone || null, hashedPassword]
+    );
+
+    const token = jwt.sign(
+      { id: result.insertId, email: email, name: hoTen, role: 'customer', loai: 'customer' },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    return res.json({ 
+      status: 'success', 
+      message: 'Đăng ký tài khoản thành công!',
+      token: token,
+      user: { id: result.insertId, name: hoTen, email: email, role: 'customer' }
+    });
+
+  } catch (error) {
+    console.error('Lỗi Đăng ký:', error);
+    return res.status(500).json({ status: 'error', message: 'Lỗi máy chủ' });
   }
-  function closeAllModals() {
-    loginModal?.classList.remove('open');
-    registerModal?.classList.remove('open');
-    modalOverlay?.classList.remove('active');
-    document.body.style.overflow = '';
-  }
+});
 
-  /* ---- UI state: logged in / out ---- */
-  function updateAuthUI() {
-    const user = getCurrentUser();
-    const token = getToken();
+/* ========================================================
+ * 2. API ĐĂNG NHẬP (Quét cả Admin và Khách hàng)
+ * ======================================================== */
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-    if (user && token) {
-      authBtns && (authBtns.style.display = 'none');
-      userMenu && (userMenu.style.display = 'flex');
-      
-      const firstName = user.firstName || user.name || '';
-      const lastName = user.lastName || '';
-      const fullName = `${firstName} ${lastName}`.trim() || user.email;
-      const initials = (firstName[0] || 'U').toUpperCase();
-      const role = user.role || 'customer';
-      const roleLabel = role === 'admin' ? 'Quản trị viên' : 'Khách hàng';
-      
-      if (userAvatarCircle) userAvatarCircle.textContent = initials;
-      if (userDisplayName) userDisplayName.textContent = fullName;
-      if (userDropdownName) {
-        userDropdownName.innerHTML = `${fullName} <span class="role-badge ${role}">${roleLabel}</span>`;
-      }
-      if (userDropdownEmail) userDropdownEmail.textContent = user.email;
-      
-      // Quản lý hiển thị nút Admin
-      const adminBtn = document.getElementById('openAdminBtn');
-      if (adminBtn) adminBtn.style.display = role === 'admin' ? 'flex' : 'none';
+    if (!email || !password) {
+      return res.status(400).json({ status: 'error', message: 'Vui lòng nhập Email và Mật khẩu' });
+    }
 
-      document.body.classList.toggle('is-admin', role === 'admin');
+    let user = null;
+    let role = '';
+    let tableName = '';
+
+    const [admins] = await pool.query("SELECT * FROM nhan_vien WHERE email = ? LIMIT 1", [email]);
+
+    if (admins.length > 0) {
+      user = admins[0];
+      role = user.vai_tro_id === 1 ? 'admin' : 'staff';
+      tableName = 'nhan_vien';
     } else {
-      authBtns && (authBtns.style.display = 'flex');
-      userMenu && (userMenu.style.display = 'none');
-      document.body.classList.remove('is-admin');
-
-      const adminBtn = document.getElementById('openAdminBtn');
-      if (adminBtn) adminBtn.style.display = 'none';
+      const [customers] = await pool.query("SELECT * FROM khach_hang WHERE email = ? LIMIT 1", [email]);
+      if (customers.length > 0) {
+        user = customers[0];
+        role = 'customer';
+        tableName = 'khach_hang';
+      }
     }
-    document.dispatchEvent(new CustomEvent('vnvd:authchange'));
-    if (window.lucide) lucide.createIcons();
+
+    if (!user) {
+      return res.status(401).json({ status: 'error', message: 'Tài khoản không tồn tại!' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.mat_khau_hash);
+    if (!isMatch) {
+      return res.status(401).json({ status: 'error', message: 'Mật khẩu không chính xác!' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.ho_ten, role: role, loai: role },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    return res.json({
+      status: 'success',
+      message: 'Đăng nhập thành công',
+      token: token,
+      user: { id: user.id, name: user.ho_ten, email: user.email, role: role }
+    });
+
+  } catch (error) {
+    console.error('Lỗi Đăng nhập:', error);
+    return res.status(500).json({ status: 'error', message: 'Lỗi máy chủ' });
+  }
+});
+
+/* ========================================================
+ * 3. API KIỂM TRA PHIÊN ĐĂNG NHẬP (Dành cho F5 reload)
+ * ======================================================== */
+router.get('/me', (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ status: 'error', message: 'Token không hợp lệ hoặc đã hết hạn.' });
   }
 
-  /* ---- Password strength ---- */
-  function checkPasswordStrength(pw) {
-    let score = 0;
-    if (pw.length >= 8)  score++;
-    if (pw.length >= 12) score++;
-    if (/[A-Z]/.test(pw)) score++;
-    if (/[0-9]/.test(pw)) score++;
-    if (/[^A-Za-z0-9]/.test(pw)) score++;
-
-    const levels = [
-      { label: 'Rất yếu',  color: '#E53E3E', pct: '20%' },
-      { label: 'Yếu',      color: '#ED8936', pct: '40%' },
-      { label: 'Trung bình',color: '#ECC94B', pct: '60%' },
-      { label: 'Mạnh',     color: '#48BB78', pct: '80%' },
-      { label: 'Rất mạnh', color: '#38A169', pct: '100%' },
-    ];
-    const lvl = levels[Math.min(score, 4)];
-    if (pwStrengthFill) {
-      pwStrengthFill.style.width      = pw.length ? lvl.pct : '0%';
-      pwStrengthFill.style.background = lvl.color;
+  return res.json({
+    status: 'success',
+    user: {
+      id: req.user.id,
+      name: req.user.name || req.user.ho_ten,
+      email: req.user.email,
+      role: req.user.role
     }
-    if (pwStrengthLabel) {
-      pwStrengthLabel.textContent = pw.length ? lvl.label : 'Độ mạnh mật khẩu';
-      pwStrengthLabel.style.color = pw.length ? lvl.color : '';
-    }
-    return score;
-  }
-
-  /* ---- Toggle password visibility ---- */
-  document.querySelectorAll('.toggle-pw').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetId = btn.dataset.target;
-      const input = document.getElementById(targetId);
-      if (!input) return;
-      const isText = input.type === 'text';
-      input.type = isText ? 'password' : 'text';
-      btn.innerHTML = isText
-        ? '<i data-lucide="eye"></i>'
-        : '<i data-lucide="eye-off"></i>';
-      if (window.lucide) lucide.createIcons();
-    });
   });
+});
 
-  /* ---- Login form ---- */
-  loginForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearErrors('loginEmailErr', 'loginPasswordErr');
-    if (loginError) loginError.style.display = 'none';
+/* ========================================================
+ * 4. API ĐĂNG NHẬP BẰNG GOOGLE (OAuth2 & Gửi Mail)
+ * ======================================================== */
+router.post('/google', async (req, res) => {
+  const { token } = req.body;
 
-    const email    = document.getElementById('loginEmail')?.value.trim();
-    const password = document.getElementById('loginPassword')?.value;
-    let valid = true;
+  if (!token) return res.status(400).json({ error: 'Không tìm thấy token xác thực.' });
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setFieldError('loginEmail', 'loginEmailErr', 'Email không hợp lệ');
-      valid = false;
-    }
-    if (!password || password.length < 6) {
-      setFieldError('loginPassword', 'loginPasswordErr', 'Mật khẩu tối thiểu 6 ký tự');
-      valid = false;
-    }
-    if (!valid) return;
+  try {
+    const googleResponse = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
+    const userInfo = googleResponse.data;
 
-    const submitBtn = document.getElementById('loginSubmit');
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.classList.add('loading'); }
+    const email = userInfo.email;
+    const fullName = `${userInfo.given_name || ''} ${userInfo.family_name || ''}`.trim();
 
-    const finish = () => { if (submitBtn) { submitBtn.disabled = false; submitBtn.classList.remove('loading'); } };
-    const failLogin = (msg) => {
-      finish();
-      if (loginError) { loginError.textContent = msg; loginError.style.display = 'block'; }
-    };
+    const [users] = await pool.query('SELECT * FROM khach_hang WHERE email = ?', [email]);
+    let user = users[0];
 
-    // Gọi API Render
-    try {
-      const response = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+    // NẾU TÀI KHOẢN CHƯA TỒN TẠI (TẠO MỚI)
+    if (!user) {
+      const insertQuery = `
+        INSERT INTO khach_hang (ho_ten, email, mat_khau_hash, trang_thai, da_xac_thuc_email)
+        VALUES (?, ?, NULL, 'hoat_dong', 1)
+      `;
+      const [result] = await pool.query(insertQuery, [fullName, email]);
+      
+      user = {
+        id: result.insertId,
+        ho_ten: fullName,
+        email: email,
+        role: 'customer'
+      };
+
+      // GỬI EMAIL CHÀO MỪNG (Cấu hình chuẩn cho Render)
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, 
+        requireTLS: true,
+        auth: {
+          user: '2006nguyenhoanggiakhang@gmail.com', 
+          pass: 'egejfzcxnvkhsxnv'     
+        },
+        tls: {
+          rejectUnauthorized: false 
+        },
+        family: 4
       });
-      const data = await response.json();
 
-      if (response.ok) {
-        setToken(data.token);
-        setCurrentUser(data.user);
-        finish();
+      const mailOptions = {
+        from: '"Hệ thống VNVD" <2006nguyenhoanggiakhang@gmail.com>',
+        to: email, 
+        subject: '🎉 Chào mừng bạn đến với VNVD!',
+        html: `
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <h2 style="color: #0056b3;">Xin chào ${fullName},</h2>
+            <p>Cảm ơn bạn đã tin tưởng và tạo tài khoản tại <strong>VNVD</strong> bằng Google.</p>
+            <p>Tài khoản của bạn đã được kích hoạt thành công. Ngay bây giờ, bạn có thể trải nghiệm toàn bộ các dịch vụ và tính năng trên hệ thống của chúng tôi.</p>
+            <br>
+            <p>Nếu cần hỗ trợ, đừng ngần ngại liên hệ lại với chúng tôi nhé!</p>
+            <p>Trân trọng,<br><strong>Đội ngũ VNVD</strong></p>
+          </div>
+        `
+      };
 
-        // Chuyển hướng nếu là admin hoặc superadmin
-        // if (data.user.role === 'admin' || data.user.role === 'superadmin') {
-        //     window.location.href = '../admin_panel/index.php';
-        //     return;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-        // }
-
-        // Nếu là khách hàng bình thường thì cập nhật giao diện tại trang chủ
-        updateAuthUI();
-        closeAllModals();
-        loginForm.reset();
-        showToast(`Chào mừng trở lại, ${data.user.name || data.user.firstName}! 👋`);
-      } else {
-        failLogin(data.message || data.error || 'Đăng nhập thất bại.');
-      }
-    } catch (err) {
-      console.error(err);
-      failLogin('Lỗi mạng: Không thể kết nối máy chủ.');
-    }
-  });
-
-  /* ---- Register form ---- */
-  registerForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearErrors('regFirstNameErr','regLastNameErr','regEmailErr','regPhoneErr','regPasswordErr','regConfirmPasswordErr','agreeTermsErr');
-    if (registerError) registerError.style.display = 'none';
-
-    const firstName = document.getElementById('regFirstName')?.value.trim();
-    const lastName  = document.getElementById('regLastName')?.value.trim();
-    const email     = document.getElementById('regEmail')?.value.trim();
-    const phone     = document.getElementById('regPhone')?.value.trim();
-    const password  = document.getElementById('regPassword')?.value;
-    const confirm   = document.getElementById('regConfirmPassword')?.value;
-    const agreed    = document.getElementById('agreeTerms')?.checked;
-    let valid = true;
-
-    if (!firstName) { setFieldError('regFirstName','regFirstNameErr','Vui lòng nhập họ'); valid = false; }
-    if (!lastName)  { setFieldError('regLastName','regLastNameErr','Vui lòng nhập tên'); valid = false; }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setFieldError('regEmail','regEmailErr','Email không hợp lệ'); valid = false;
-    }
-    if (phone && !/^(0|\+84)[0-9]{8,10}$/.test(phone.replace(/\s/g,''))) {
-      setFieldError('regPhone','regPhoneErr','Số điện thoại không hợp lệ'); valid = false;
-    }
-    if (!password || password.length < 8) {
-      setFieldError('regPassword','regPasswordErr','Mật khẩu tối thiểu 8 ký tự'); valid = false;
-    }
-    if (password !== confirm) {
-      setFieldError('regConfirmPassword','regConfirmPasswordErr','Mật khẩu xác nhận không khớp'); valid = false;
-    }
-    if (!agreed) {
-      const err = document.getElementById('agreeTermsErr');
-      if (err) err.textContent = 'Bạn cần đồng ý với điều khoản dịch vụ';
-      valid = false;
-    }
-    if (!valid) return;
-
-    const submitBtn = document.getElementById('registerSubmit');
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.classList.add('loading'); }
-    const finish = () => { if (submitBtn) { submitBtn.disabled = false; submitBtn.classList.remove('loading'); } };
-    const failReg = (msg) => {
-      finish();
-      if (registerError) { registerError.textContent = msg; registerError.style.display = 'block'; }
-    };
-
-    // Gọi API Render
-    try {
-      const response = await fetch(`${API_URL}/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, email, phone, password })
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        if (data.token) {
-          setToken(data.token);
-          setCurrentUser(data.user);
-        }
-        finish();
-        updateAuthUI();
-        closeAllModals();
-        registerForm.reset();
-        checkPasswordStrength('');
-        showToast(`Đăng ký thành công! Chào mừng ${firstName} đến với VNVD 🎉`);
-      } else {
-        failReg(data.message || data.error || 'Đăng ký thất bại.');
-      }
-    } catch (err) {
-      console.error(err);
-      failReg('Lỗi mạng: Không thể kết nối máy chủ.');
-    }
-  });
-
-  /* ---- Password strength live ---- */
-  regPassword?.addEventListener('input', () => checkPasswordStrength(regPassword.value));
-
-  /* ---- Logout ---- */
-  logoutBtn?.addEventListener('click', () => {
-    setCurrentUser(null);
-    setToken('');
-    updateAuthUI();
-    userMenu?.classList.remove('open');
-    showToast('Đã đăng xuất thành công');
-  });
-
-  /* ---- User dropdown toggle ---- */
-  userAvatarBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    userMenu?.classList.toggle('open');
-  });
-  document.addEventListener('click', (e) => {
-    if (!userMenu?.contains(e.target)) userMenu?.classList.remove('open');
-  });
-
-  /* ---- Modal triggers ---- */
-  openLoginBtn?.addEventListener('click',    () => openModal(loginModal));
-  openRegisterBtn?.addEventListener('click', () => openModal(registerModal));
-  closeLoginBtn?.addEventListener('click',   () => closeModal(loginModal));
-  closeRegisterBtn?.addEventListener('click',() => closeModal(registerModal));
-  modalOverlay?.addEventListener('click',    closeAllModals);
-
-  switchToReg?.addEventListener('click', () => {
-    closeModal(loginModal);
-    setTimeout(() => openModal(registerModal), 150);
-  });
-  switchToLog?.addEventListener('click', () => {
-    closeModal(registerModal);
-    setTimeout(() => openModal(loginModal), 150);
-  });
-
-/* ---- Khởi tạo Facebook SDK ---- */
-  window.fbAsyncInit = function() {
-    FB.init({
-      appId      : 'NHẬP_FACEBOOK_APP_ID_CỦA_BẠN', // Thay ID của bạn vào
-      cookie     : true,
-      xfbml      : true,
-      version    : 'v18.0'
-    });
-  };
-
-  /* ---- Xử lý đăng nhập Google ---- */
-  document.getElementById('loginGoogle')?.addEventListener('click', () => {
-    // Khởi tạo client Google
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: '653013164885-0q59b5044gn602dgjt4rl1btjor3c4ga.apps.googleusercontent.com', // Thay ID của bạn vào
-      scope: 'email profile',
-      //prompt: 'consent',// hiển thị cấp quiền mỗi lần đăng nhập
-      callback: async (response) => {
-        if (response.error) return;
-        
-        showToast('Đang xác thực với hệ thống...', false);
-        try {
-          // Gửi token lấy được từ Google lên Backend Node.js của bạn
-          const { token, user } = await Api.loginGoogle(response.access_token);
-          
-          // Lưu token và thông tin người dùng giống hệt luồng đăng nhập thường
-          Api.setToken(token);
-          setCurrentUser(user);
-          updateAuthUI();
-          closeAllModals();
-          showToast(`Chào mừng ${user.firstName} đã đăng nhập bằng Google! 🎉`);
-        } catch (err) {
-          showToast(err.message || 'Lỗi xác thực Google', true);
-        }
-      },
-    });
-    client.requestAccessToken();
-  });
-
-  /* ---- Xử lý đăng nhập Facebook ---- */
-  document.getElementById('loginFacebook')?.addEventListener('click', () => {
-    FB.login(async function(response) {
-      if (response.authResponse) {
-        showToast('Đang xác thực với hệ thống...', false);
-        try {
-          // Gửi token lấy được từ FB lên Backend Node.js
-          const { token, user } = await Api.loginFacebook(response.authResponse.accessToken);
-          
-          Api.setToken(token);
-          setCurrentUser(user);
-          updateAuthUI();
-          closeAllModals();
-          showToast(`Chào mừng ${user.firstName} đã đăng nhập bằng Facebook! 🎉`);
-        } catch (err) {
-          showToast(err.message || 'Lỗi xác thực Facebook', true);
-        }
-      } else {
-        showToast('Người dùng đã hủy đăng nhập Facebook', true);
-      }
-    }, {scope: 'public_profile,email'});
-  });
-
-  /* ---- Keyboard: Escape closes modals ---- */
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeAllModals();
-  });
-
-  /* ---- Khôi phục phiên đăng nhập từ token trên Render ---- */
-  async function restoreSession() {
-    const token = getToken();
-    if (token) {
-      try {
-        const response = await fetch(`${API_URL}/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setCurrentUser(data.user);
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Lỗi gửi email chào mừng:', error);
         } else {
-          // Token hết hạn hoặc không hợp lệ
-          setToken('');
-          setCurrentUser(null);
+          console.log('Đã gửi email chào mừng thành công tới:', email);
         }
-      } catch (err) {
-        console.error('Lỗi khôi phục session:', err);
-      }
+      });
+
+    } else {
+      user = { 
+        id: user.id, 
+        ho_ten: user.ho_ten, 
+        email: user.email, 
+        role: user.vai_tro || 'customer' 
+      };
     }
-    updateAuthUI();
+
+    // ĐỒNG BỘ GÓI TOKEN
+    const jwtToken = jwt.sign(
+      { id: user.id, email: user.email, name: user.ho_ten, role: user.role, loai: user.role },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.status(200).json({ 
+      status: 'success',
+      message: 'Đăng nhập Google thành công', 
+      token: jwtToken, 
+      user: { id: user.id, name: user.ho_ten, email: user.email, role: user.role }
+    });
+
+  } catch (error) {
+    console.error('Lỗi đăng nhập Google:', error.message);
+    res.status(500).json({ error: 'Xác thực thất bại.' });
   }
+});
 
-  /* ---- Init ---- */
-  document.addEventListener('DOMContentLoaded', () => {
-    restoreSession();
-    if (window.lucide) lucide.createIcons();
-  });
-  if (document.readyState !== 'loading') restoreSession();
-
-})();
+module.exports = router;
