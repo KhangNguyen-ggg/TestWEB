@@ -188,7 +188,7 @@ router.post('/google', async (req, res) => {
       };
 
       // ---- BẮT ĐẦU ĐOẠN CODE GỬI EMAIL CHÀO MỪNG ----
-      // Cấu hình mới tối ưu cho máy chủ ảo (Render, Heroku,...)
+      // Cấu hình mới tối ưu cho máy chủ ảo (Render, Heroku,...)aaa
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
