@@ -196,17 +196,18 @@ router.post('/google', async (req, res) => {
       // ---- BẮT ĐẦU ĐOẠN CODE GỬI EMAIL CHÀO MỪNG ----
       // Thay thế khối transporter cũ bằng khối này
       const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com', // Ép kết nối thẳng vào host của Google
-        port: 465,              // Cổng bảo mật chuẩn
-        secure: true,           // Bật mã hóa SSL/TLS
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, 
         auth: {
-          user: 'email_cua_ban@gmail.com', // ⚠️ Nhớ điền lại Gmail của bạn
-          pass: 'mã_mật_khẩu_ứng_dụng'     // ⚠️ Nhớ điền lại mã 16 chữ cái
+          user: '2006nguyenhoanggiakhang@gmail.com', // ⚠️ Thay email của bạn
+          pass: 'egejfzcxnvkhsxnv'     // ⚠️ Thay mã 16 chữ cái
         },
         tls: {
-          // Bỏ qua lỗi chứng chỉ bảo mật khi chạy trên localhost / mạng local
           rejectUnauthorized: false 
-        }
+        },
+        // 👇 THÊM DÒNG NÀY ĐỂ GIẢI QUYẾT MỌI VẤN ĐỀ VỀ MẠNG
+        family: 4 // Bắt buộc ưu tiên dùng IPv4 (bỏ qua IPv6)
       });
       const mailOptions = {
         from: '"Hệ thống VNVD" <2006nguyenhoanggiakhang@gmail.com>',
