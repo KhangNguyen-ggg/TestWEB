@@ -121,16 +121,11 @@ function renderMenuHTML($menuTree, $parentId = 0)
             <span class="cart-badge" id="cartBadge" style="display:none">0</span>
           </button>
 
-          <!-- NÚT ADMIN NỔI BẬT (Thêm mới vào đây) -->
-          <!-- <a href="admin_panel/index.php" class="tb-btn" id="openAdminBtn" style="display:none; background: #FF6B00; color: white; border-radius: 8px; padding: 0 15px; text-decoration: none; margin-left: 10px;">
-            <i data-lucide="layout-dashboard" style="color: white;"></i>
-            <span class="tb-btn-label" style="margin-left: 5px; font-weight: bold;">Vào Quản Trị</span>
-        </a>-->
-
+          <!-- NÚT ADMIN NỔI BẬT (Thêm mới vào đây) 
           <button class="tb-btn" id="openAdminBtn" style="display:none; background: #FF6B00; color: white; border-radius: 8px; padding: 0 15px; border: none; cursor: pointer; margin-left: 10px;">
             <i data-lucide="layout-dashboard" style="color: white;"></i>
             <span class="tb-btn-label" style="margin-left: 5px; font-weight: bold;">Vào Quản Trị</span>
-          </button>
+          </button>-->
 
           <div class="tb-divider"></div>
 
