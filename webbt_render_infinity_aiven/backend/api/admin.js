@@ -301,7 +301,7 @@ router.delete('/products/:id', async (req, res) => {
 });
 
 /* ==========================================================
-   5. API ĐƠN HÀNG (GIỮ NGUYÊN)
+   5. API ĐƠN HÀNG (GIỮ NGUYÊN) ng
    ========================================================== */
 router.get('/orders', async (_req, res) => {
     try {
