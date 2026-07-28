@@ -26,7 +26,7 @@
 <!-- 3. Logic tính năng cốt lõi (Module-based) -->
 <script src="js/auth.js"></script>  <!-- Quản lý trạng thái Đăng nhập/Đăng ký -->
 <script src="js/cart.js"></script>  <!-- Xử lý Giỏ hàng -->
-<script src="js/admin.js"></script> <!-- Bảng điều khiển Admin -->
+<!-- <script src="js/admin.js"></script> Bảng điều khiển Admin -->
 <script src="js/chat.js"></script>  <!-- Bot tư vấn -->
 
 <!-- 4. Hiệu ứng UI & Main Script (Nạp sau cùng để đảm bảo HTML đã vẽ xong) -->
