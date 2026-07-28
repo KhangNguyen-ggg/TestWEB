@@ -148,7 +148,9 @@ function renderMenuHTML($menuTree, $parentId = 0)
               <a href="#" class="user-dropdown-item"><i data-lucide="user"></i> Hồ sơ cá nhân</a>
               <a href="#" class="user-dropdown-item"><i data-lucide="package"></i> Đơn hàng của tôi</a>
               <a href="#" class="user-dropdown-item"><i data-lucide="settings"></i> Cài đặt</a>
-              <button class="user-dropdown-item admin-only admin-entry" id="openAdminBtn"><i data-lucide="layout-dashboard"></i> Quản trị hệ thống</button>
+              <a href="../admin_panel/" class="user-dropdown-item admin-only admin-entry" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="layout-dashboard"></i> Quản trị hệ thống
+              </a>
               <div class="user-dropdown-divider"></div>
               <button class="user-dropdown-item logout-btn" id="logoutBtn"><i data-lucide="log-out"></i> Đăng xuất</button>
             </div>
