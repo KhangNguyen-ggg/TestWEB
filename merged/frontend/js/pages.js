@@ -304,6 +304,27 @@
         : `<span>${b}</span><i data-lucide="chevron-right" class="pg-crumb-sep"></i>`
     ).join('');
 
+    // Kiểm tra xem trang có được gắn mã sản phẩm (từ Database) không
+    const isPurchasable = page.ma_san_pham && page.gia_niem_yet;
+    
+    let buyNowBlock = '';
+    
+    // NẾU CÓ DỮ LIỆU TỪ DB -> SINH RA NÚT MUA NGAY ĐỘNG
+    if (isPurchasable) {
+        const priceFormatted = new Intl.NumberFormat('vi-VN').format(page.gia_niem_yet) + ' ₫';
+        buyNowBlock = `
+          <div class="pg-buy-action" style="margin: 40px 0 20px 0; padding: 30px; background: rgba(229, 62, 62, 0.05); border-radius: 12px; border: 1px dashed rgba(229, 62, 62, 0.3); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+            <h3 style="margin: 0; color: #333; font-size: 1.4rem;">Sẵn sàng bứt phá cùng giải pháp này?</h3>
+            <h4 style="margin: 0; color: #E53E3E; font-size: 1.3rem;">Phí dịch vụ: <strong>${priceFormatted}</strong></h4>
+            <p style="margin: 0; color: #555;">Đăng ký ngay hôm nay để nhận tư vấn chuyên sâu và ưu đãi đặc biệt dành cho doanh nghiệp của bạn.</p>
+            <button class="btn-buy-now btn-add-cart" style="background: #E53E3E; color: white; border: none; border-radius: 8px; padding: 14px 35px; font-size: 1.1rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3); transition: 0.3s;"
+                    data-id="${page.ma_san_pham}">
+              <i data-lucide="zap"></i> Mua ngay
+            </button>
+          </div>
+        `;
+    }
+
     c.innerHTML = `
       <div class="pg-hero">
         <div class="pg-hero-orbs"><span></span><span></span></div>
@@ -365,7 +386,7 @@
 
     try {
       // Gọi API đến backend Render
-      const response = await fetch(`/api/pages?slug=${encodeURIComponent(key)}`);
+      const response = await fetch(`https://testweb-3dku.onrender.com/api/pages?slug=${encodeURIComponent(key)}`);
       const responseData = await response.json();
 
       if (responseData.status === 'success') {
