@@ -5,6 +5,7 @@ const axios = require('axios');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db/db');
+const { shapeCustomer, shapeAdmin, joinName } = require('./shape');
 
 // Khóa bí mật để tạo Token (Trong thực tế nên để trong file .env)
 const JWT_SECRET = process.env.JWT_SECRET || 'vnvd_super_secret_key_2026';
@@ -238,6 +239,70 @@ router.post('/google', async (req, res) => {
   } catch (error) {
     console.error('Lỗi đăng nhập Google:', error.message);
     res.status(500).json({ error: 'Xác thực thất bại.' });
+  }
+});
+
+
+
+
+
+/* ========================================================
+ * 5. ĐĂNG NHẬP BẰNG FACEBOOK (OAuth2)
+ * ======================================================== */
+router.post('/facebook', async (req, res) => {
+  try {
+    const { token: fbToken } = req.body || {};
+    if (!fbToken) {
+      return res.status(400).json({ error: 'Không tìm thấy token xác thực.' });
+    }
+
+    // 1) Lấy thông tin từ máy chủ Facebook
+    const fbResponse = await axios.get(`https://graph.facebook.com/me?fields=id,name,email&access_token=${fbToken}`);
+    const userInfo = fbResponse.data;
+
+    // Facebook có thể không trả về email nếu tài khoản tạo bằng SĐT
+    const email = userInfo.email || `${userInfo.id}@facebook.com`;
+    const hoTen = userInfo.name || 'Người dùng Facebook';
+
+    // 2) Tìm khách hàng trong DB
+    const [customers] = await pool.query(
+      'SELECT id, ho_ten, email, so_dien_thoai, mat_khau_hash, trang_thai FROM khach_hang WHERE email = ? LIMIT 1',
+      [email]
+    );
+
+    let c;
+    if (customers.length) {
+      c = customers[0];
+      if (c.trang_thai === 'khoa') {
+        return res.status(403).json({ error: 'Tài khoản đã bị khóa.' });
+      }
+    } else {
+      // 3) Nếu chưa có tài khoản -> Tự động tạo mới (Để trống mật khẩu)
+      const [result] = await pool.query(
+        `INSERT INTO khach_hang (ho_ten, email, so_dien_thoai, mat_khau_hash, trang_thai, da_xac_thuc_email)
+         VALUES (?, ?, NULL, '', 'hoat_dong', TRUE)`,
+        [hoTen, email]
+      );
+      c = {
+        id: result.insertId,
+        ho_ten: hoTen,
+        email: email,
+        so_dien_thoai: null
+      };
+    }
+
+    // 4) Đóng gói User và Ký Token giống hệt logic Login thường
+    const user = shapeCustomer(c);
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: c.ho_ten, role: 'customer', loai: 'customer' },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+    return res.json({ token, user });
+
+  } catch (err) {
+    console.error('POST /api/auth/facebook:', err.response ? err.response.data : err.message);
+    return res.status(500).json({ error: 'Xác thực Facebook thất bại.' });
   }
 });
 

@@ -6,9 +6,9 @@
   'use strict';
 
   // API URL trên Render
-  const API_URL = '/api/auth';
+  const API_URL = 'https://testweb-3dku.onrender.com/api/auth';
 
-  /* ---- DOM refs ---- */
+/* ---- DOM refs ---- */
   const loginModal      = document.getElementById('loginModal');
   const registerModal   = document.getElementById('registerModal');
   const modalOverlay    = document.getElementById('modalOverlay');
@@ -362,13 +362,108 @@
     setTimeout(() => openModal(loginModal), 150);
   });
 
-  /* ---- Social login (demo) ---- */
+/* ---- Social login ---- */
   document.getElementById('loginGoogle')?.addEventListener('click', () => {
-    showToast('Chức năng đăng nhập Google đang được bảo trì.', true);
+    // Kiểm tra xem SDK Google ở file Scripts.php đã tải xong chưa
+    if (typeof google === 'undefined') {
+      showToast('SDK Google chưa được tải, vui lòng tải lại trang.', true);
+      return;
+    }
+
+    // Khởi tạo cửa sổ đăng nhập Google
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: '653013164885-0q59b5044gn602dgjt4rl1btjor3c4ga.apps.googleusercontent.com', // <<< Nhớ copy Client ID có đuôi .apps.googleusercontent.com dán vào đây
+      scope: 'email profile',
+      callback: async (response) => {
+        if (response.error) {
+            console.error('Lỗi từ Google:', response.error);
+            return;
+        }
+        
+        showToast('Đang xác thực với hệ thống...', false);
+        
+        try {
+          // Gửi access_token của Google lên Backend Node.js trên Render
+          const res = await fetch(`${API_URL}/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: response.access_token })
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            // Xác thực thành công: Lưu token, cập nhật UI và đóng Modal
+            setToken(data.token);
+            setCurrentUser(data.user);
+            updateAuthUI();
+            closeAllModals();
+            showToast(`Chào mừng ${data.user.firstName || data.user.name || 'bạn'} đã đăng nhập bằng Google! 🎉`);
+          } else {
+            showToast(data.message || data.error || 'Lỗi xác thực tài khoản Google', true);
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Lỗi mạng: Không thể kết nối với server.', true);
+        }
+      },
+    });
+    
+    // Kích hoạt hiển thị popup chọn tài khoản Google
+    client.requestAccessToken();
   });
+
+  // ---- Facebook login ----
   document.getElementById('loginFacebook')?.addEventListener('click', () => {
-    showToast('Chức năng đăng nhập Facebook đang được bảo trì.', true);
+    // 1. Kiểm tra SDK Facebook đã tải chưa
+    if (typeof FB === 'undefined') {
+      showToast('SDK Facebook chưa được tải, vui lòng tải lại trang.', true);
+      return;
+    }
+
+    // 2. KHỞI TẠO APP ID NGAY TẠI ĐÂY (Trước khi login)
+    FB.init({
+      appId      : 'NHẬP_APP_ID_CỦA_BẠN_VÀO_ĐÂY', 
+      cookie     : true,
+      xfbml      : true,
+      version    : 'v19.0'
+    });
+
+    // 3. Gọi cửa sổ đăng nhập Facebook
+    FB.login(function(response) {
+      if (response.authResponse) {
+        // Lấy được Access Token từ Facebook
+        const accessToken = response.authResponse.accessToken;
+        showToast('Đang xác thực với hệ thống...', false);
+        
+        // 3. Gửi Token này lên Backend Node.js
+        fetch(`${API_URL}/facebook`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: accessToken })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.token) {
+            // Lưu token và cập nhật giao diện
+            setToken(data.token);
+            setCurrentUser(data.user);
+            updateAuthUI();
+            closeAllModals();
+            showToast(`Chào mừng ${data.user.name || data.user.firstName} đã đăng nhập bằng Facebook! 🎉`);
+          } else {
+            showToast(data.message || data.error || 'Lỗi xác thực Facebook', true);
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          showToast('Lỗi mạng: Không thể kết nối với server.', true);
+        });
+      } else {
+        showToast('Đăng nhập Facebook bị hủy.', true);
+      }
+    }, { scope: 'public_profile,email' }); // Yêu cầu quyền lấy email và tên
   });
+  
 
   /* ---- Forgot password (demo) ---- */
   document.getElementById('forgotLink')?.addEventListener('click', (e) => {
