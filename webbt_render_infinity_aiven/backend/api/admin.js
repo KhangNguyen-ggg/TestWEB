@@ -15,14 +15,14 @@ router.use(requireAdmin);
    ========================================================== */
 router.get('/stats', async (_req, res) => {
     try {
-        // Đếm tổng nhân viên và nhân viên đang hoạt động (dùng điều kiện an toàn hơn)
+        // ĐÃ SỬA: Đổi "hoat_dong" thành 'hoat_dong' (nháy đơn)
         const [[{ totalAdmins }]] = await pool.query('SELECT COUNT(*) as totalAdmins FROM nhan_vien');
-        const [[{ activeAdmins }]] = await pool.query('SELECT COUNT(*) as activeAdmins FROM nhan_vien WHERE trang_thai="hoat_dong" OR trang_thai IS NULL');
+        const [[{ activeAdmins }]] = await pool.query("SELECT COUNT(*) as activeAdmins FROM nhan_vien WHERE trang_thai='hoat_dong'");
 
         // Thống kê Khách hàng
         const [[{ totalCustomers }]] = await pool.query('SELECT COUNT(*) as totalCustomers FROM khach_hang');
-        const [[{ activeCustomers }]] = await pool.query('SELECT COUNT(*) as activeCustomers FROM khach_hang WHERE trang_thai="hoat_dong"');
-        const [[{ lockedCustomers }]] = await pool.query('SELECT COUNT(*) as lockedCustomers FROM khach_hang WHERE trang_thai="khoa"');
+        const [[{ activeCustomers }]] = await pool.query("SELECT COUNT(*) as activeCustomers FROM khach_hang WHERE trang_thai='hoat_dong'");
+        const [[{ lockedCustomers }]] = await pool.query("SELECT COUNT(*) as lockedCustomers FROM khach_hang WHERE trang_thai='khoa'");
         const [[{ newThisMonth }]] = await pool.query('SELECT COUNT(*) as newThisMonth FROM khach_hang WHERE MONTH(created_at)=MONTH(NOW()) AND YEAR(created_at)=YEAR(NOW())');
 
         // Khách hàng mới nhất
@@ -30,7 +30,7 @@ router.get('/stats', async (_req, res) => {
 
         // Tổng doanh thu và Đơn hàng
         const [[o]] = await pool.query('SELECT COUNT(*) AS n FROM don_hang');
-        const [[r]] = await pool.query(`SELECT COALESCE(SUM(tong_thanh_toan),0) AS total FROM don_hang WHERE trang_thai_don_hang <> 'da_huy'`);
+        const [[r]] = await pool.query("SELECT COALESCE(SUM(tong_thanh_toan),0) AS total FROM don_hang WHERE trang_thai_don_hang <> 'da_huy'");
 
         return res.json({
             totalAdmins, activeAdmins,
@@ -48,17 +48,14 @@ router.get('/stats', async (_req, res) => {
 /* ==========================================================
    2. API QUẢN TRỊ VIÊN (BẢNG NHAN_VIEN)
    ========================================================== */
-// Hàm hỗ trợ map vai trò từ Text (Frontend) sang ID (Database)
 function mapRoleToId(roleText) {
     if (roleText === 'superadmin' || roleText === 'admin') return 1;
-    return 2; // Mặc định là 'nhan_vien'
+    return 2; 
 }
 
-// Lấy danh sách
 router.get('/users', async (req, res) => {
     try {
         const { q = '', status = '' } = req.query;
-        // ĐÃ SỬA: Dùng bảng `nhan_vien` và JOIN với `vai_tro`
         let sql = `
             SELECT nv.id, nv.ho_ten, nv.email, vt.ten_vai_tro as vai_tro, nv.trang_thai, nv.created_at 
             FROM nhan_vien nv
@@ -79,9 +76,10 @@ router.get('/users', async (req, res) => {
 
         const [users] = await pool.query(sql, params);
         
+        // ĐÃ SỬA: Đổi nháy kép thành nháy đơn
         const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM nhan_vien');
-        const [[{ active }]] = await pool.query('SELECT COUNT(*) as active FROM nhan_vien WHERE trang_thai="hoat_dong"');
-        const [[{ locked }]] = await pool.query('SELECT COUNT(*) as locked FROM nhan_vien WHERE trang_thai="khoa"');
+        const [[{ active }]] = await pool.query("SELECT COUNT(*) as active FROM nhan_vien WHERE trang_thai='hoat_dong'");
+        const [[{ locked }]] = await pool.query("SELECT COUNT(*) as locked FROM nhan_vien WHERE trang_thai='khoa'");
 
         return res.json({ users, stats: { total, active, locked } });
     } catch (err) {
@@ -90,14 +88,12 @@ router.get('/users', async (req, res) => {
     }
 });
 
-// Thêm Admin
 router.post('/users', async (req, res) => {
     const { ho_ten, email, mat_khau, vai_tro, trang_thai } = req.body;
     try {
         const hash = await bcrypt.hash(mat_khau, 10);
         const roleId = mapRoleToId(vai_tro);
 
-        // ĐÃ SỬA: Insert vào `nhan_vien`, dùng `mat_khau_hash` và `vai_tro_id`
         await pool.query(
             'INSERT INTO nhan_vien (ho_ten, email, mat_khau_hash, vai_tro_id, trang_thai) VALUES (?, ?, ?, ?, ?)',
             [ho_ten, email, hash, roleId, trang_thai || 'hoat_dong']
@@ -109,7 +105,6 @@ router.post('/users', async (req, res) => {
     }
 });
 
-// Sửa Admin
 router.put('/users/:id', async (req, res) => {
     const { id } = req.params;
     const { ho_ten, email, mat_khau, vai_tro, trang_thai } = req.body;
@@ -133,7 +128,6 @@ router.put('/users/:id', async (req, res) => {
     }
 });
 
-// Xóa Admin
 router.delete('/users/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM nhan_vien WHERE id = ?', [req.params.id]);
@@ -143,7 +137,6 @@ router.delete('/users/:id', async (req, res) => {
     }
 });
 
-// Đổi trạng thái Admin
 router.patch('/users/:id/status', async (req, res) => {
     try {
         await pool.query('UPDATE nhan_vien SET trang_thai=? WHERE id=?', [req.body.trang_thai, req.params.id]);
@@ -175,9 +168,10 @@ router.get('/customers', async (req, res) => {
 
         const [customers] = await pool.query(sql, params);
         
+        // ĐÃ SỬA: Đổi nháy kép thành nháy đơn
         const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM khach_hang');
-        const [[{ active }]] = await pool.query('SELECT COUNT(*) as active FROM khach_hang WHERE trang_thai="hoat_dong"');
-        const [[{ locked }]] = await pool.query('SELECT COUNT(*) as locked FROM khach_hang WHERE trang_thai="khoa"');
+        const [[{ active }]] = await pool.query("SELECT COUNT(*) as active FROM khach_hang WHERE trang_thai='hoat_dong'");
+        const [[{ locked }]] = await pool.query("SELECT COUNT(*) as locked FROM khach_hang WHERE trang_thai='khoa'");
         const [[{ newThisMonth }]] = await pool.query('SELECT COUNT(*) as newThisMonth FROM khach_hang WHERE MONTH(created_at)=MONTH(NOW()) AND YEAR(created_at)=YEAR(NOW())');
 
         return res.json({ customers, stats: { total, active, locked, newThisMonth } });
@@ -189,7 +183,6 @@ router.get('/customers', async (req, res) => {
 router.post('/customers', async (req, res) => {
     const { ho_ten, email, so_dien_thoai, dia_chi, trang_thai } = req.body;
     try {
-        // Cần truyền mat_khau_hash mặc định nếu DB yêu cầu NOT NULL
         const defaultHash = await bcrypt.hash('123456', 10); 
         await pool.query(
             'INSERT INTO khach_hang (ho_ten, email, so_dien_thoai, mat_khau_hash, trang_thai) VALUES (?, ?, ?, ?, ?)',
@@ -255,8 +248,9 @@ router.get('/products', async (req, res) => {
 
         const [products] = await pool.query(sql, params);
         
+        // ĐÃ SỬA: Đổi nháy kép thành nháy đơn
         const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM san_pham');
-        const [[{ active }]] = await pool.query('SELECT COUNT(*) as active FROM san_pham WHERE trang_thai="dang_ban"');
+        const [[{ active }]] = await pool.query("SELECT COUNT(*) as active FROM san_pham WHERE trang_thai='dang_ban'");
 
         return res.json({ products, stats: { total, active } });
     } catch (err) {
@@ -301,7 +295,7 @@ router.delete('/products/:id', async (req, res) => {
 });
 
 /* ==========================================================
-   5. API ĐƠN HÀNG (GIỮ NGUYÊN) ng
+   5. API ĐƠN HÀNG (GIỮ NGUYÊN)
    ========================================================== */
 router.get('/orders', async (_req, res) => {
     try {
