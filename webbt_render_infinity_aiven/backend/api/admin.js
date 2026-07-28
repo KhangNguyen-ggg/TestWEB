@@ -15,9 +15,9 @@ router.use(requireAdmin);
    ========================================================== */
 router.get('/stats', async (_req, res) => {
     try {
-        // ĐÃ SỬA: Dùng bảng `nhan_vien` thay vì `admins`
+        // Đếm tổng nhân viên và nhân viên đang hoạt động (dùng điều kiện an toàn hơn)
         const [[{ totalAdmins }]] = await pool.query('SELECT COUNT(*) as totalAdmins FROM nhan_vien');
-        const [[{ activeAdmins }]] = await pool.query('SELECT COUNT(*) as activeAdmins FROM nhan_vien WHERE trang_thai="hoat_dong"');
+        const [[{ activeAdmins }]] = await pool.query('SELECT COUNT(*) as activeAdmins FROM nhan_vien WHERE trang_thai="hoat_dong" OR trang_thai IS NULL');
 
         // Thống kê Khách hàng
         const [[{ totalCustomers }]] = await pool.query('SELECT COUNT(*) as totalCustomers FROM khach_hang');
